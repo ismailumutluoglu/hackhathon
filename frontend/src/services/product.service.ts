@@ -18,6 +18,7 @@ export const productService = {
     page?: number;
     limit?: number;
     sort?: string;
+    isCampaign?: boolean;
   }) {
     const res = await api.get<ProductsResponse>('/products', { params });
     return res.data;

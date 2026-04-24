@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { productService } from '../services/product.service';
 import ProductCard from '../components/home/ProductCard';
 import { useDebounce } from '../hooks/useDebounce';
@@ -19,16 +20,31 @@ const categories = [
 ];
 
 export default function ProductsPage() {
+  const [searchParams] = useSearchParams();
   const [search, setSearch]     = useState('');
   const [category, setCategory] = useState('');
   const [page, setPage]         = useState(1);
   const [sort, setSort]         = useState('-createdAt');
+  const [isCampaign, setIsCampaign] = useState(false);
+
+  useEffect(() => {
+    const campaignParam = searchParams.get('isCampaign');
+    const categoryParam = searchParams.get('category');
+    if (campaignParam === 'true') setIsCampaign(true);
+    if (categoryParam) setCategory(categoryParam);
+  }, [searchParams]);
 
   const debouncedSearch = useDebounce(search);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['products', { category, search: debouncedSearch, page, sort }],
-    queryFn: () => productService.getProducts({ category: category || undefined, search: debouncedSearch || undefined, page, sort }),
+    queryKey: ['products', { category, search: debouncedSearch, page, sort, isCampaign }],
+    queryFn: () => productService.getProducts({
+      category: category || undefined,
+      search: debouncedSearch || undefined,
+      page,
+      sort,
+      ...(isCampaign ? { isCampaign: true } : {}),
+    }),
   });
 
   return (
@@ -73,12 +89,22 @@ export default function ProductsPage() {
 
       {/* Category tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-8 scrollbar-hide">
+        <button
+          onClick={() => { setIsCampaign(!isCampaign); setPage(1); }}
+          className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            isCampaign
+              ? 'bg-red-500 text-white'
+              : 'bg-white text-stone-600 hover:bg-red-50 border border-stone-200'
+          }`}
+        >
+          Kampanyalar
+        </button>
         {categories.map((cat) => (
           <button
             key={cat.value}
-            onClick={() => { setCategory(cat.value); setPage(1); }}
+            onClick={() => { setCategory(cat.value); setIsCampaign(false); setPage(1); }}
             className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-              category === cat.value
+              category === cat.value && !isCampaign
                 ? 'bg-primary-500 text-white'
                 : 'bg-white text-stone-600 hover:bg-primary-50 border border-stone-200'
             }`}
@@ -113,7 +139,7 @@ export default function ProductsPage() {
         <div className="text-center py-20">
           <SlidersHorizontal className="w-12 h-12 text-stone-300 mx-auto mb-4" />
           <p className="text-stone-500 text-lg">Ürün bulunamadı</p>
-          <button onClick={() => { setSearch(''); setCategory(''); }} className="mt-4 text-primary-600 font-medium">
+          <button onClick={() => { setSearch(''); setCategory(''); setIsCampaign(false); }} className="mt-4 text-primary-600 font-medium">
             Filtreleri temizle
           </button>
         </div>

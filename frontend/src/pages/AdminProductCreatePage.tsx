@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { producerService } from '../services/producer.service';
+import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/product.service';
+import { producerService } from '../services/producer.service';
 import { useAuthStore } from '../store/authStore';
 
 const categories = ['sebze', 'meyve', 'tahıl', 'süt-ürünleri', 'bal-recel', 'zeytinyağı', 'kuruyemiş', 'bakliyat'];
@@ -14,17 +14,20 @@ export default function AdminProductCreatePage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
+  const { data: producersData } = useQuery({
+    queryKey: ['producers-list'],
+    queryFn: () => producerService.getProducers({ limit: 100 }),
+    enabled: isAuthenticated && (user?.role === 'admin' || user?.role === 'producer'),
+  });
+
   const [form, setForm] = useState({
     name: '',
     description: '',
-    producer: '',
     category: 'sebze',
     unit: 'kg',
     price: '',
     stock: '',
-    city: '',
-    district: '',
-    farmName: '',
+    producerId: '',
     imageUrl: '',
     tags: '',
     healthBenefits: '',
@@ -35,16 +38,6 @@ export default function AdminProductCreatePage() {
     campaignEndsAt: '',
   });
 
-  const canManageProducts = user?.role === 'admin' || user?.role === 'producer' || user?.role === 'customer';
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin-producers'],
-    queryFn: () => producerService.getProducers({ limit: 100 }),
-    enabled: isAuthenticated && !!canManageProducts,
-  });
-
-  const producers = useMemo(() => data?.producers || [], [data]);
-
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -54,22 +47,21 @@ export default function AdminProductCreatePage() {
     setError('');
     setSuccess('');
 
-    if (!form.producer) return setError('Lütfen bir üretici seçin.');
-
     setIsSaving(true);
     try {
       await productService.createProduct({
         name: form.name.trim(),
         description: form.description.trim(),
-        producer: form.producer,
+        producer: form.producerId,
         category: form.category,
         price: Number(form.price),
         unit: form.unit,
         stock: Number(form.stock),
+        // Servis katmanı zorunlu tuttuğu için varsayılan değerler gönderiyoruz
         origin: {
-          city: form.city.trim(),
-          district: form.district.trim() || undefined,
-          farmName: form.farmName.trim() || undefined,
+          city: 'Belirtilmedi', // Veya projenin ana şehri
+          district: '',
+          farmName: ''
         },
         images: form.imageUrl.trim() ? [form.imageUrl.trim()] : [],
         tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
@@ -86,6 +78,7 @@ export default function AdminProductCreatePage() {
         ...prev,
         name: '',
         description: '',
+        producerId: '',
         imageUrl: '',
         tags: '',
         healthBenefits: '',
@@ -106,7 +99,7 @@ export default function AdminProductCreatePage() {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
         <h1 className="font-display text-3xl font-bold text-stone-800 mb-3">Giriş gerekli</h1>
-        <p className="text-stone-500 mb-6">Ürün eklemek için önce admin hesabıyla giriş yapmalısınız.</p>
+        <p className="text-stone-500 mb-6">Ürün eklemek için önce giriş yapmalısınız.</p>
         <Link to="/giris" className="inline-flex bg-primary-500 text-white px-6 py-3 rounded-full font-semibold">
           Giriş Yap
         </Link>
@@ -114,11 +107,14 @@ export default function AdminProductCreatePage() {
     );
   }
 
-  if (!canManageProducts) {
+  if (user?.role !== 'admin' && user?.role !== 'producer') {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-        <h1 className="font-display text-3xl font-bold text-stone-800 mb-3">Yetkiniz yok</h1>
-        <p className="text-stone-500">Bu sayfaya erişim için giriş yapmanız gerekiyor.</p>
+        <h1 className="font-display text-3xl font-bold text-stone-800 mb-3">Yetkisiz Erişim</h1>
+        <p className="text-stone-500 mb-6">Bu sayfaya erişim için admin veya üretici yetkisi gerekiyor.</p>
+        <Link to="/" className="inline-flex bg-primary-500 text-white px-6 py-3 rounded-full font-semibold">
+          Ana Sayfaya Dön
+        </Link>
       </div>
     );
   }
@@ -126,7 +122,7 @@ export default function AdminProductCreatePage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
       <div className="mb-8">
-        <p className="text-sm uppercase tracking-wider text-primary-600">Admin panel</p>
+        <p className="text-sm uppercase tracking-wider text-primary-600">Yönetim Paneli</p>
         <h1 className="font-display text-3xl font-bold text-stone-800">Yeni Ürün Ekle</h1>
       </div>
 
@@ -134,25 +130,29 @@ export default function AdminProductCreatePage() {
       {success && <div className="mb-5 bg-green-50 text-green-700 px-4 py-3 rounded-xl text-sm">{success}</div>}
 
       <form onSubmit={handleSubmit} className="bg-white border border-stone-200 rounded-2xl p-6 space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Ürün Adı</label>
-            <input required value={form.name} onChange={(e) => update('name', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Üretici</label>
-            <select required value={form.producer} onChange={(e) => update('producer', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" disabled={isLoading}>
-              <option value="">Üretici seçin</option>
-              {producers.map((p) => (
-                <option key={p._id} value={p._id}>{p.name} - {p.location.city}</option>
-              ))}
-            </select>
-          </div>
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Ürün Adı</label>
+          <input required value={form.name} onChange={(e) => update('name', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
         </div>
 
         <div>
           <label className="block text-sm font-medium text-stone-700 mb-1">Açıklama</label>
           <textarea required value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Üretici</label>
+          <select
+            required
+            value={form.producerId}
+            onChange={(e) => update('producerId', e.target.value)}
+            className="w-full border border-stone-300 rounded-xl px-3 py-2.5"
+          >
+            <option value="">Üretici seçin...</option>
+            {producersData?.producers.map((p) => (
+              <option key={p._id} value={p._id}>{p.name} — {p.location.city}</option>
+            ))}
+          </select>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -178,21 +178,6 @@ export default function AdminProductCreatePage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Şehir</label>
-            <input required value={form.city} onChange={(e) => update('city', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">İlçe</label>
-            <input value={form.district} onChange={(e) => update('district', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-stone-700 mb-1">Çiftlik Adı</label>
-            <input value={form.farmName} onChange={(e) => update('farmName', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
-          </div>
-        </div>
-
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-stone-700 mb-1">Ürün Görsel URL</label>
@@ -209,36 +194,36 @@ export default function AdminProductCreatePage() {
           <input value={form.healthBenefits} onChange={(e) => update('healthBenefits', e.target.value)} placeholder="lif kaynağı,vitamin içerir" className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label className="inline-flex items-center gap-2 text-sm text-stone-700">
-            <input type="checkbox" checked={form.isFeatured} onChange={(e) => update('isFeatured', e.target.checked)} />
+        <div className="flex gap-6">
+          <label className="inline-flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+            <input type="checkbox" checked={form.isFeatured} onChange={(e) => update('isFeatured', e.target.checked)} className="rounded text-primary-600" />
             Öne çıkan ürün
           </label>
-          <label className="inline-flex items-center gap-2 text-sm text-stone-700">
-            <input type="checkbox" checked={form.isCampaign} onChange={(e) => update('isCampaign', e.target.checked)} />
+          <label className="inline-flex items-center gap-2 text-sm text-stone-700 cursor-pointer">
+            <input type="checkbox" checked={form.isCampaign} onChange={(e) => update('isCampaign', e.target.checked)} className="rounded text-primary-600" />
             Kampanya ürünü
           </label>
         </div>
 
         {form.isCampaign && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-stone-50 rounded-xl border border-stone-200">
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">İndirimli Fiyat</label>
-              <input type="number" min="0" step="0.01" value={form.discountedPrice} onChange={(e) => update('discountedPrice', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
+              <input type="number" min="0" step="0.01" value={form.discountedPrice} onChange={(e) => update('discountedPrice', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5 bg-white" />
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">Eski Fiyat</label>
-              <input type="number" min="0" step="0.01" value={form.campaignOriginalPrice} onChange={(e) => update('campaignOriginalPrice', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
+              <input type="number" min="0" step="0.01" value={form.campaignOriginalPrice} onChange={(e) => update('campaignOriginalPrice', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5 bg-white" />
             </div>
             <div>
               <label className="block text-sm font-medium text-stone-700 mb-1">Bitiş Tarihi</label>
-              <input type="datetime-local" value={form.campaignEndsAt} onChange={(e) => update('campaignEndsAt', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
+              <input type="datetime-local" value={form.campaignEndsAt} onChange={(e) => update('campaignEndsAt', e.target.value)} className="w-full border border-stone-300 rounded-xl px-3 py-2.5 bg-white" />
             </div>
           </div>
         )}
 
         <div className="pt-3">
-          <button disabled={isSaving} type="submit" className="bg-primary-600 text-white px-7 py-3 rounded-full font-semibold hover:bg-primary-700 disabled:opacity-60">
+          <button disabled={isSaving} type="submit" className="w-full md:w-auto bg-primary-600 text-white px-10 py-3 rounded-full font-semibold hover:bg-primary-700 disabled:opacity-60 transition-colors">
             {isSaving ? 'Kaydediliyor...' : 'Ürünü Kaydet'}
           </button>
         </div>
