@@ -15,8 +15,8 @@ export default function Footer() {
               <span className="font-display font-bold text-xl">TAZEKÖY</span>
             </div>
             <p className="text-primary-200 text-sm leading-relaxed max-w-xs">
-              İlaçsız tarım. Organik. Sağlıklı. Üreticisini, tarlasını ve hasat zamanını
-              bildiğin dürüst bir alışveriş deneyimi.
+              Tohumdan hasada şeffaflık, topraktan sofraya sağlık. İlaçsız, doğal ve dürüst 
+              tarımın en yalın hali.
             </p>
             <div className="flex items-center gap-3 mt-4">
               <a href="#" className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
@@ -36,7 +36,7 @@ export default function Footer() {
             <h4 className="font-semibold text-sm uppercase tracking-wider text-primary-300 mb-4">Keşfet</h4>
             <ul className="space-y-2 text-sm text-primary-200">
               <li><Link to="/urunler" className="hover:text-white transition-colors">Tüm Ürünler</Link></li>
-              <li><Link to="/ureticiler" className="hover:text-white transition-colors">Çiftçilerimiz</Link></li>
+              
               <li><Link to="/diyetisyen" className="hover:text-white transition-colors">AI Diyetisyen</Link></li>
               <li><Link to="/urunler?category=kampanya" className="hover:text-white transition-colors">Kampanyalar</Link></li>
             </ul>
