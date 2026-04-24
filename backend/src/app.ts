@@ -24,7 +24,7 @@ const aiLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, message: { succ
 
 app.use('/api/', limiter);
 app.use('/api/ai', aiLimiter);
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '1mb' }));
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', env: ENV.NODE_ENV }));
 

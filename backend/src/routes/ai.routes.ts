@@ -8,8 +8,7 @@ router.use(authMiddleware);
 
 router.post('/recommend', getRecommendations);
 router.get('/history', getHistory);
-router.patch('/:id/feedback', submitFeedback);
-
 router.get('/admin/logs', adminMiddleware, getAdminLogs);
+router.patch('/:id/feedback', submitFeedback);
 
 export default router;

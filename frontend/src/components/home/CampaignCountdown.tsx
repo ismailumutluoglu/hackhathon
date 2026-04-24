@@ -25,7 +25,7 @@ export default function CampaignCountdown({ campaignProduct }: Props) {
   ];
 
   return (
-    <section className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-10">
+    <section className="bg-gradient-to-r from-red-600 to-orange-500 text-white py-10 mt-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
           {/* Left: info */}
