@@ -47,7 +47,7 @@ export const productService = {
   async createProduct(data: {
     name: string;
     description: string;
-    producer: string;
+    producer?: string;
     category: string;
     price: number;
     unit: string;

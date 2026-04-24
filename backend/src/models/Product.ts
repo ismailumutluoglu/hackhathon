@@ -80,7 +80,7 @@ const ProductSchema = new Schema<IProduct>(
     slug:                  { type: String, required: true, unique: true, lowercase: true },
     description:           { type: String, required: true },
     story:                 { type: String, default: '' },
-    producer:              { type: Schema.Types.ObjectId, ref: 'Producer', required: true },
+    producer:              { type: Schema.Types.ObjectId, ref: 'Producer' },
     category:              { type: String, required: true, enum: ['sebze', 'meyve', 'tahıl', 'süt-ürünleri', 'bal-recel', 'zeytinyağı', 'kuruyemiş', 'bakliyat'] },
     subCategory:           String,
     tags:                  { type: [String], default: [] },

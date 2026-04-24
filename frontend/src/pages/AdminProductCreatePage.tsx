@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { productService } from '../services/product.service';
-import { producerService } from '../services/producer.service';
 import { useAuthStore } from '../store/authStore';
 
 const categories = ['sebze', 'meyve', 'tahıl', 'süt-ürünleri', 'bal-recel', 'zeytinyağı', 'kuruyemiş', 'bakliyat'];
@@ -14,12 +12,6 @@ export default function AdminProductCreatePage() {
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
 
-  const { data: producersData } = useQuery({
-    queryKey: ['producers-list'],
-    queryFn: () => producerService.getProducers({ limit: 100 }),
-    enabled: isAuthenticated && (user?.role === 'admin' || user?.role === 'producer'),
-  });
-
   const [form, setForm] = useState({
     name: '',
     description: '',
@@ -27,7 +19,6 @@ export default function AdminProductCreatePage() {
     unit: 'kg',
     price: '',
     stock: '',
-    producerId: '',
     imageUrl: '',
     tags: '',
     healthBenefits: '',
@@ -52,7 +43,6 @@ export default function AdminProductCreatePage() {
       await productService.createProduct({
         name: form.name.trim(),
         description: form.description.trim(),
-        producer: form.producerId,
         category: form.category,
         price: Number(form.price),
         unit: form.unit,
@@ -78,7 +68,6 @@ export default function AdminProductCreatePage() {
         ...prev,
         name: '',
         description: '',
-        producerId: '',
         imageUrl: '',
         tags: '',
         healthBenefits: '',
@@ -140,20 +129,6 @@ export default function AdminProductCreatePage() {
           <textarea required value={form.description} onChange={(e) => update('description', e.target.value)} rows={4} className="w-full border border-stone-300 rounded-xl px-3 py-2.5" />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-stone-700 mb-1">Üretici</label>
-          <select
-            required
-            value={form.producerId}
-            onChange={(e) => update('producerId', e.target.value)}
-            className="w-full border border-stone-300 rounded-xl px-3 py-2.5"
-          >
-            <option value="">Üretici seçin...</option>
-            {producersData?.producers.map((p) => (
-              <option key={p._id} value={p._id}>{p.name} — {p.location.city}</option>
-            ))}
-          </select>
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
