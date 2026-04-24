@@ -26,7 +26,7 @@ export default function HeroSection() {
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-4 py-2 rounded-full text-sm font-medium mb-6"
             >
               <Leaf className="w-4 h-4" />
-              İlaçsız Tarım. Organik. Sağlıklı.
+              Doğadan, Sağlıklı Yaşam.
             </motion.div>
 
             <h1 className="font-display text-5xl lg:text-6xl font-bold leading-tight mb-6">
@@ -60,7 +60,7 @@ export default function HeroSection() {
               {[
                 { icon: <Shield className="w-4 h-4" />, text: 'Sertifikalı Organik' },
                 { icon: <Truck className="w-4 h-4" />, text: '500₺ Üzeri Kargo Bedava' },
-                { icon: <Leaf className="w-4 h-4" />, text: 'İlaçsız Tarım' },
+                { icon: <Leaf className="w-4 h-4" />, text: 'İlaç Yok' },
               ].map((badge) => (
                 <div key={badge.text} className="flex items-center gap-2 text-sm text-primary-200">
                   {badge.icon}
