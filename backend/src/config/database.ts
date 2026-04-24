@@ -3,5 +3,5 @@ import mongoose from 'mongoose';
 export async function connectDB(): Promise<void> {
   const uri = process.env.MONGODB_URI!;
   await mongoose.connect(uri);
-  console.log('MongoDB bağlantısı kuruldu:', uri);
+  console.log('MongoDB bağlantısı kuruldu.');
 }
