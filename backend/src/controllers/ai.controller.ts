@@ -1,12 +1,12 @@
 import { Response, NextFunction } from 'express';
-import Anthropic from '@anthropic-ai/sdk';
+import Groq from 'groq-sdk';
 import { Product } from '../models/Product';
 import { User } from '../models/User';
 import { AIRecommendation } from '../models/AIRecommendation';
 import { AppError } from '../middlewares/error.middleware';
 import { AuthRequest } from '../middlewares/auth.middleware';
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY || 'missing_key' });
 
 export async function getRecommendations(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
@@ -21,7 +21,7 @@ export async function getRecommendations(req: AuthRequest, res: Response, next: 
     // Aktif ürünleri çek (AI prompt için optimize edilmiş alan seçimi)
     const products = await Product.find({ isActive: true, stock: { $gt: 0 } })
       .populate('producer', 'name location.city')
-      .select('_id name category tags healthBenefits suitableFor notSuitableFor nutritionFacts price unit');
+      .select('_id name slug images discountedPrice campaignOriginalPrice category tags healthBenefits suitableFor notSuitableFor nutritionFacts price unit');
 
     const productList = products.map(p => ({
       id: p._id.toString(),
@@ -32,7 +32,7 @@ export async function getRecommendations(req: AuthRequest, res: Response, next: 
       healthBenefits: p.healthBenefits,
     }));
 
-    const systemPrompt = `Sen TAZEKÖY organik gıda platformunun yapay zeka diyetisyenisin. Görevin kullanıcının sağlık profiline göre platform ürünleri arasından kişiselleştirilmiş öneriler sunmaktır. Yanıtlarını Türkçe, samimi ve anlaşılır bir dille yap. ÖNEMLI: Yanıtını her zaman geçerli JSON formatında döndür, başka hiçbir metin ekleme.`;
+    const systemPrompt = `You are the AI nutrition expert for the TAZEKÖY organic food platform. Your task is to provide personalized recommendations from the products on the platform based on the user’s health profile. Provide your responses in Turkish, using a friendly and clear tone. IMPORTANT: Always provide your response in valid JSON format; do not include any additional text. The user’s health profile may include their health conditions, goals, dietary restrictions, allergies, and—optionally—their age, weight, and height. The user may also ask specific questions or describe how they are feeling. Use this information to analyze the current product list and determine which products best meet the user’s needs and which ones they should avoid. For each recommended product, specify a reason and a benefit score (1–10). Explain the reason for products that should be avoided. Additionally, include a summary of your analysis and any additional dietary recommendations. `;
 
     const userPrompt = `Kullanıcı Sağlık Profili:
 - Sağlık durumları: ${healthProfile.conditions?.join(', ') || 'belirtilmemiş'}
@@ -53,19 +53,23 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
   "dietaryAdvice": "Ek beslenme önerileri"
 }`;
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2000,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }],
+    const completion = await client.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt }
+      ],
     });
 
     const processingTimeMs = Date.now() - startTime;
-    const rawContent = message.content[0].type === 'text' ? message.content[0].text : '{}';
+    const rawContent = completion.choices[0]?.message?.content || '{}';
 
     let parsed;
     try {
-      parsed = JSON.parse(rawContent);
+      // Groq bazen geriye JSON objesini triple backticks içinde de dönebiliyor (fallback)
+      const cleanedContent = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+      parsed = JSON.parse(cleanedContent);
     } catch {
       throw new AppError('AI yanıtı işlenemedi. Lütfen tekrar deneyin.', 500);
     }
@@ -100,12 +104,12 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
         summary: parsed.summary || '',
         dietaryAdvice: parsed.dietaryAdvice || '',
       },
-      aiProvider: 'anthropic',
-      aiModel: 'claude-sonnet-4-6',
+      aiProvider: 'groq',
+      aiModel: 'llama-3.3-70b-versatile',
       tokensUsed: {
-        input: message.usage.input_tokens,
-        output: message.usage.output_tokens,
-        total: message.usage.input_tokens + message.usage.output_tokens,
+        input: completion.usage?.prompt_tokens || 0,
+        output: completion.usage?.completion_tokens || 0,
+        total: completion.usage?.total_tokens || 0,
       },
       processingTimeMs,
       isSuccessful: true,
@@ -113,7 +117,11 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
 
     // Ürün detaylarını populate ederek dön
     const populated = await AIRecommendation.findById(log._id)
-      .populate('response.recommendations.product', 'name slug images price discountedPrice unit')
+      .populate({
+        path: 'response.recommendations.product',
+        select: 'name slug images price discountedPrice campaignOriginalPrice unit producer',
+        populate: { path: 'producer', select: 'name rating location.city' }
+      })
       .populate('response.avoidList.product', 'name slug images');
 
     res.json({ success: true, recommendation: populated, sessionId });
