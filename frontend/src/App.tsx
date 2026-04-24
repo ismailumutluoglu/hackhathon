@@ -6,6 +6,7 @@ import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AIDietitianPage from './pages/AIDietitianPage';
 import AdminProductCreatePage from './pages/AdminProductCreatePage';
 
 const queryClient = new QueryClient();
@@ -43,7 +44,7 @@ export default function App() {
             <Route path="/admin" element={<AdminProductCreatePage />} />
             <Route path="/admin/urun-ekle" element={<AdminProductCreatePage />} />
             <Route path="/ureticiler" element={<ComingSoonPage title="Ureticiler" />} />
-            <Route path="/diyetisyen" element={<ComingSoonPage title="AI Diyetisyen" />} />
+            <Route path="/diyetisyen" element={<AIDietitianPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Route>
 
