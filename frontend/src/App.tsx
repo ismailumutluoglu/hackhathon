@@ -53,14 +53,15 @@ function AppRoutes() {
   );
 }
 
-function ComingSoonPage({ title }: { title: string }) {
-  return (
-    <div className="max-w-5xl mx-auto px-4 py-16 text-center">
-      <h1 className="font-display text-3xl font-bold text-stone-800 mb-3">{title}</h1>
-      <p className="text-stone-500">Bu sayfa yakında aktif olacak.</p>
-    </div>
-  );
-}
+// Kullanılmadığı için geçici olarak kapatıldı
+// function ComingSoonPage({ title }: { title: string }) {
+//   return (
+//     <div className="max-w-5xl mx-auto px-4 py-16 text-center">
+//       <h1 className="font-display text-3xl font-bold text-stone-800 mb-3">{title}</h1>
+//       <p className="text-stone-500">Bu sayfa yakında aktif olacak.</p>
+//     </div>
+//   );
+// }
 
 function NotFoundPage() {
   return (
