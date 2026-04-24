@@ -53,7 +53,7 @@ export async function updateAddress(req: AuthRequest, res: Response, next: NextF
     const user = await User.findById(req.userId);
     if (!user) throw new AppError('Kullanıcı bulunamadı.', 404);
 
-    const addr = user.addresses.id(req.params.id);
+    const addr = user.addresses.find((a: any) => a._id?.toString() === req.params.id);
     if (!addr) throw new AppError('Adres bulunamadı.', 404);
 
     Object.assign(addr, req.body);
