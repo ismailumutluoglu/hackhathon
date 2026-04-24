@@ -14,7 +14,7 @@ export default function Header() {
 
   const navLinks = [
     { to: '/urunler', label: 'Ürünler' },
-    { to: '/ureticiler', label: 'Üreticiler' },
+    { to: '/kampanyalar', label: '🔥 Kampanyalar' },
     { to: '/diyetisyen', label: 'AI Diyetisyen' },
   ];
 
