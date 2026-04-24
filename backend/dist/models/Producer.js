@@ -80,7 +80,6 @@ const ProducerSchema = new mongoose_1.Schema({
     isActive: { type: Boolean, default: true },
     joinedAt: { type: Date, default: Date.now },
 }, { timestamps: true });
-ProducerSchema.index({ slug: 1 });
 ProducerSchema.index({ 'location.city': 1 });
 ProducerSchema.index({ isVerified: 1, isActive: 1 });
 exports.Producer = mongoose_1.default.model('Producer', ProducerSchema);

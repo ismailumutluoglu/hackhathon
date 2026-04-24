@@ -88,7 +88,6 @@ const OrderSchema = new mongoose_1.Schema({
     parentOrderId: { type: mongoose_1.Schema.Types.ObjectId, ref: 'Order' },
 }, { timestamps: true });
 OrderSchema.index({ user: 1, createdAt: -1 });
-OrderSchema.index({ orderNumber: 1 });
 OrderSchema.index({ status: 1 });
 exports.Order = mongoose_1.default.model('Order', OrderSchema);
 //# sourceMappingURL=Order.js.map

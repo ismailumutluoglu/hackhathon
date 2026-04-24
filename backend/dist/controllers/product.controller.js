@@ -13,12 +13,16 @@ const error_middleware_1 = require("../middlewares/error.middleware");
 const slugify_1 = require("../utils/slugify");
 async function getProducts(req, res, next) {
     try {
-        const { category, search, minPrice, maxPrice, page = 1, limit = 12, sort = '-createdAt' } = req.query;
+        const { category, search, minPrice, maxPrice, page = 1, limit = 12, sort = '-createdAt', isCampaign } = req.query;
         const filter = { isActive: true };
         if (category)
             filter.category = category;
         if (search)
             filter.$text = { $search: search };
+        if (isCampaign === 'true') {
+            filter.isCampaign = true;
+            filter.campaignEndsAt = { $gt: new Date() };
+        }
         if (minPrice || maxPrice) {
             filter.price = {};
             if (minPrice)

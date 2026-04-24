@@ -12,7 +12,7 @@ exports.ENV = {
     MONGODB_URI: process.env.MONGODB_URI || 'mongodb://localhost:27017/tazekoy',
     JWT_SECRET: process.env.JWT_SECRET || 'fallback_secret_change_in_production',
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
-    ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || '',
+    GROQ_API_KEY: process.env.GROQ_API_KEY || '',
     CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
 };
 //# sourceMappingURL=env.js.map

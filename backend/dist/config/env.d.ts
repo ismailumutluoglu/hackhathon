@@ -4,7 +4,7 @@ export declare const ENV: {
     MONGODB_URI: string;
     JWT_SECRET: string;
     JWT_EXPIRES_IN: string;
-    ANTHROPIC_API_KEY: string;
+    GROQ_API_KEY: string;
     CLIENT_URL: string;
 };
 //# sourceMappingURL=env.d.ts.map

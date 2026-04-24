@@ -44,7 +44,7 @@ async function createOrder(req, res, next) {
         }
         const shippingFee = subtotal >= 500 ? 0 : 29.90;
         const total = subtotal + shippingFee;
-        const orderNumber = await (0, orderNumber_1.generateOrderNumber)();
+        const orderNumber = (0, orderNumber_1.generateOrderNumber)();
         const order = await Order_1.Order.create({
             orderNumber,
             user: req.userId,

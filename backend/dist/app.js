@@ -24,7 +24,7 @@ const limiter = (0, express_rate_limit_1.default)({ windowMs: 15 * 60 * 1000, ma
 const aiLimiter = (0, express_rate_limit_1.default)({ windowMs: 60 * 60 * 1000, max: 20, message: { success: false, message: 'Saatlik AI istek limitine ulaştınız.' } });
 app.use('/api/', limiter);
 app.use('/api/ai', aiLimiter);
-app.use(express_1.default.json({ limit: '10kb' }));
+app.use(express_1.default.json({ limit: '1mb' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', env: env_1.ENV.NODE_ENV }));
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/users', user_routes_1.default);

@@ -39,8 +39,8 @@ function adminMiddleware(req, _res, next) {
     next();
 }
 function adminOrProducerMiddleware(req, _res, next) {
-    if (req.userRole !== 'admin' && req.userRole !== 'producer' && req.userRole !== 'customer') {
-        return next(new error_middleware_1.AppError('Bu işlem için giriş yapmış kullanıcı olmanız gerekiyor.', 403));
+    if (req.userRole !== 'admin' && req.userRole !== 'producer') {
+        return next(new error_middleware_1.AppError('Bu işlem için admin veya üretici yetkisi gerekiyor.', 403));
     }
     next();
 }

@@ -80,6 +80,5 @@ UserSchema.pre('save', async function (next) {
 UserSchema.methods.comparePassword = async function (candidatePassword) {
     return bcryptjs_1.default.compare(candidatePassword, this.password);
 };
-UserSchema.index({ email: 1 });
 exports.User = mongoose_1.default.model('User', UserSchema);
 //# sourceMappingURL=User.js.map

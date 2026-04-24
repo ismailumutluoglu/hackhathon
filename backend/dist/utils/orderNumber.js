@@ -1,11 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateOrderNumber = generateOrderNumber;
-const Order_1 = require("../models/Order");
-async function generateOrderNumber() {
+function generateOrderNumber() {
     const year = new Date().getFullYear();
-    const count = await Order_1.Order.countDocuments();
-    const padded = String(count + 1).padStart(5, '0');
-    return `TAZE-${year}-${padded}`;
+    const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+    const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
+    return `TAZE-${year}-${timestamp}${random}`;
 }
 //# sourceMappingURL=orderNumber.js.map

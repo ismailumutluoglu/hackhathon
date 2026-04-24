@@ -65,7 +65,7 @@ const AIRecommendationSchema = new mongoose_1.Schema({
         dietaryAdvice: String,
         disclaimer: { type: String, default: 'Bu öneriler tıbbi tavsiye değildir. Lütfen doktorunuza danışın.' },
     },
-    aiProvider: { type: String, enum: ['openai', 'anthropic'], required: true },
+    aiProvider: { type: String, enum: ['openai', 'anthropic', 'groq'], required: true },
     aiModel: { type: String, required: true },
     tokensUsed: {
         input: { type: Number, default: 0 },

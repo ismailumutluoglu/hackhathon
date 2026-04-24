@@ -30,7 +30,7 @@ export interface IAIRecommendation extends Document {
         dietaryAdvice: string;
         disclaimer: string;
     };
-    aiProvider: 'openai' | 'anthropic';
+    aiProvider: 'openai' | 'anthropic' | 'groq';
     aiModel: string;
     tokensUsed: {
         input: number;

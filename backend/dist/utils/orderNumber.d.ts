@@ -1,2 +1,2 @@
-export declare function generateOrderNumber(): Promise<string>;
+export declare function generateOrderNumber(): string;
 //# sourceMappingURL=orderNumber.d.ts.map

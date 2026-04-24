@@ -7,16 +7,24 @@ exports.getRecommendations = getRecommendations;
 exports.getHistory = getHistory;
 exports.submitFeedback = submitFeedback;
 exports.getAdminLogs = getAdminLogs;
-const sdk_1 = __importDefault(require("@anthropic-ai/sdk"));
+const groq_sdk_1 = __importDefault(require("groq-sdk"));
 const Product_1 = require("../models/Product");
 const User_1 = require("../models/User");
 const AIRecommendation_1 = require("../models/AIRecommendation");
 const error_middleware_1 = require("../middlewares/error.middleware");
-const client = new sdk_1.default({ apiKey: process.env.ANTHROPIC_API_KEY });
+const env_1 = require("../config/env");
+function createGroqClient() {
+    const apiKey = (env_1.ENV.GROQ_API_KEY || '').trim();
+    if (!apiKey || apiKey === 'your_groq_api_key_here') {
+        throw new error_middleware_1.AppError('AI servisi yapılandırılmamış. Geçerli bir GROQ_API_KEY tanımlayın.', 503);
+    }
+    return new groq_sdk_1.default({ apiKey });
+}
 async function getRecommendations(req, res, next) {
     try {
         const startTime = Date.now();
         const { userQuery } = req.body;
+        const client = createGroqClient();
         const user = await User_1.User.findById(req.userId).select('healthProfile');
         if (!user)
             throw new error_middleware_1.AppError('Kullanıcı bulunamadı.', 404);
@@ -24,7 +32,7 @@ async function getRecommendations(req, res, next) {
         // Aktif ürünleri çek (AI prompt için optimize edilmiş alan seçimi)
         const products = await Product_1.Product.find({ isActive: true, stock: { $gt: 0 } })
             .populate('producer', 'name location.city')
-            .select('_id name category tags healthBenefits suitableFor notSuitableFor nutritionFacts price unit');
+            .select('_id name slug images discountedPrice campaignOriginalPrice category tags healthBenefits suitableFor notSuitableFor nutritionFacts price unit');
         const productList = products.map(p => ({
             id: p._id.toString(),
             name: p.name,
@@ -33,7 +41,7 @@ async function getRecommendations(req, res, next) {
             notSuitableFor: p.notSuitableFor,
             healthBenefits: p.healthBenefits,
         }));
-        const systemPrompt = `Sen TAZEKÖY organik gıda platformunun yapay zeka diyetisyenisin. Görevin kullanıcının sağlık profiline göre platform ürünleri arasından kişiselleştirilmiş öneriler sunmaktır. Yanıtlarını Türkçe, samimi ve anlaşılır bir dille yap. ÖNEMLI: Yanıtını her zaman geçerli JSON formatında döndür, başka hiçbir metin ekleme.`;
+        const systemPrompt = `You are the AI nutrition expert for the TAZEKÖY organic food platform. Your task is to provide personalized recommendations from the products on the platform based on the user’s health profile. Provide your responses in Turkish, using a friendly and clear tone. IMPORTANT: Always provide your response in valid JSON format; do not include any additional text. The user’s health profile may include their health conditions, goals, dietary restrictions, allergies, and—optionally—their age, weight, and height. The user may also ask specific questions or describe how they are feeling. Use this information to analyze the current product list and determine which products best meet the user’s needs and which ones they should avoid. For each recommended product, specify a reason and a benefit score (1–10). Explain the reason for products that should be avoided. Additionally, include a summary of your analysis and any additional dietary recommendations. `;
         const userPrompt = `Kullanıcı Sağlık Profili:
 - Sağlık durumları: ${healthProfile.conditions?.join(', ') || 'belirtilmemiş'}
 - Hedefler: ${healthProfile.goals?.join(', ') || 'belirtilmemiş'}
@@ -52,17 +60,21 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
   "summary": "Genel özet",
   "dietaryAdvice": "Ek beslenme önerileri"
 }`;
-        const message = await client.messages.create({
-            model: 'claude-sonnet-4-6',
-            max_tokens: 2000,
-            system: systemPrompt,
-            messages: [{ role: 'user', content: userPrompt }],
+        const completion = await client.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            response_format: { type: 'json_object' },
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userPrompt }
+            ],
         });
         const processingTimeMs = Date.now() - startTime;
-        const rawContent = message.content[0].type === 'text' ? message.content[0].text : '{}';
+        const rawContent = completion.choices[0]?.message?.content || '{}';
         let parsed;
         try {
-            parsed = JSON.parse(rawContent);
+            // Groq bazen geriye JSON objesini triple backticks içinde de dönebiliyor (fallback)
+            const cleanedContent = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+            parsed = JSON.parse(cleanedContent);
         }
         catch {
             throw new error_middleware_1.AppError('AI yanıtı işlenemedi. Lütfen tekrar deneyin.', 500);
@@ -97,23 +109,31 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
                 summary: parsed.summary || '',
                 dietaryAdvice: parsed.dietaryAdvice || '',
             },
-            aiProvider: 'anthropic',
-            aiModel: 'claude-sonnet-4-6',
+            aiProvider: 'groq',
+            aiModel: 'llama-3.3-70b-versatile',
             tokensUsed: {
-                input: message.usage.input_tokens,
-                output: message.usage.output_tokens,
-                total: message.usage.input_tokens + message.usage.output_tokens,
+                input: completion.usage?.prompt_tokens || 0,
+                output: completion.usage?.completion_tokens || 0,
+                total: completion.usage?.total_tokens || 0,
             },
             processingTimeMs,
             isSuccessful: true,
         });
         // Ürün detaylarını populate ederek dön
         const populated = await AIRecommendation_1.AIRecommendation.findById(log._id)
-            .populate('response.recommendations.product', 'name slug images price discountedPrice unit')
+            .populate({
+            path: 'response.recommendations.product',
+            select: 'name slug images price discountedPrice campaignOriginalPrice unit producer',
+            populate: { path: 'producer', select: 'name rating location.city' }
+        })
             .populate('response.avoidList.product', 'name slug images');
         res.json({ success: true, recommendation: populated, sessionId });
     }
     catch (err) {
+        if (err?.status === 401 || err?.error?.error?.code === 'invalid_api_key') {
+            next(new error_middleware_1.AppError('GROQ_API_KEY geçersiz görünüyor. Lütfen .env dosyasına yeni bir Groq API anahtarı girip sunucuyu yeniden başlatın.', 502));
+            return;
+        }
         next(err);
     }
 }
