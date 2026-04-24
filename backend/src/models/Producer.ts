@@ -94,7 +94,6 @@ const ProducerSchema = new Schema<IProducer>(
   { timestamps: true }
 );
 
-ProducerSchema.index({ slug: 1 });
 ProducerSchema.index({ 'location.city': 1 });
 ProducerSchema.index({ isVerified: 1, isActive: 1 });
 

@@ -121,7 +121,6 @@ const OrderSchema = new Schema<IOrder>(
 );
 
 OrderSchema.index({ user: 1, createdAt: -1 });
-OrderSchema.index({ orderNumber: 1 });
 OrderSchema.index({ status: 1 });
 
 export const Order = mongoose.model<IOrder>('Order', OrderSchema);

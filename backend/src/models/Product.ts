@@ -117,7 +117,6 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-ProductSchema.index({ slug: 1 });
 ProductSchema.index({ category: 1, isActive: 1 });
 ProductSchema.index({ producer: 1 });
 ProductSchema.index({ isFeatured: 1, isActive: 1 });
