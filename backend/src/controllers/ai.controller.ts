@@ -6,7 +6,7 @@ import { AIRecommendation } from '../models/AIRecommendation';
 import { AppError } from '../middlewares/error.middleware';
 import { AuthRequest } from '../middlewares/auth.middleware';
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY || 'missing_key' });
 
 export async function getRecommendations(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
