@@ -31,7 +31,7 @@ export interface IAIRecommendation extends Document {
     dietaryAdvice: string;
     disclaimer: string;
   };
-  aiProvider: 'openai' | 'anthropic';
+  aiProvider: 'openai' | 'anthropic' | 'groq';
   aiModel: string;
   tokensUsed: { input: number; output: number; total: number };
   processingTimeMs: number;
@@ -74,7 +74,7 @@ const AIRecommendationSchema = new Schema<IAIRecommendation>(
       dietaryAdvice: String,
       disclaimer:    { type: String, default: 'Bu öneriler tıbbi tavsiye değildir. Lütfen doktorunuza danışın.' },
     },
-    aiProvider: { type: String, enum: ['openai', 'anthropic'], required: true },
+    aiProvider: { type: String, enum: ['openai', 'anthropic', 'groq'], required: true },
     aiModel:    { type: String, required: true },
     tokensUsed: {
       input:  { type: Number, default: 0 },
