@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ShoppingCart, Star, MapPin, CheckCircle } from 'lucide-react';
-import { Product } from '../../types';
+import type { Product } from '../../types';
 import { formatPrice } from '../../lib/utils';
 import { useCartStore } from '../../store/cartStore';
 

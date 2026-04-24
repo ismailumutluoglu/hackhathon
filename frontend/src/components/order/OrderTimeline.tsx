@@ -1,5 +1,5 @@
 import { CheckCircle, Clock, Truck, Package, Home, XCircle } from 'lucide-react';
-import { OrderStatus, StatusUpdate } from '../../types';
+import type { OrderStatus, StatusUpdate } from '../../types';
 import { formatDate } from '../../lib/utils';
 import { cn } from '../../lib/utils';
 

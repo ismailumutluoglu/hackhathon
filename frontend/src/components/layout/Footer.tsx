@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Leaf, Instagram, Youtube, Mail } from 'lucide-react';
+import { Leaf, Camera, Play, Mail } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -20,10 +20,10 @@ export default function Footer() {
             </p>
             <div className="flex items-center gap-3 mt-4">
               <a href="#" className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                <Instagram className="w-4 h-4" />
+                <Camera className="w-4 h-4" />
               </a>
               <a href="#" className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
-                <Youtube className="w-4 h-4" />
+                <Play className="w-4 h-4" />
               </a>
               <a href="mailto:merhaba@tazekoy.com" className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors">
                 <Mail className="w-4 h-4" />

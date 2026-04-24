@@ -1,5 +1,5 @@
 import api from './api';
-import { AIRecommendationResult } from '../types';
+import type { AIRecommendationResult } from '../types';
 
 export const aiService = {
   async getRecommendations(userQuery?: string) {
