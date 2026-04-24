@@ -6,6 +6,7 @@ import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AdminProductCreatePage from './pages/AdminProductCreatePage';
 
 const queryClient = new QueryClient();
 
@@ -39,6 +40,8 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/urunler" element={<ProductsPage />} />
             <Route path="/urunler/:slug" element={<ProductDetailPage />} />
+            <Route path="/admin" element={<AdminProductCreatePage />} />
+            <Route path="/admin/urun-ekle" element={<AdminProductCreatePage />} />
             <Route path="/ureticiler" element={<ComingSoonPage title="Ureticiler" />} />
             <Route path="/diyetisyen" element={<ComingSoonPage title="AI Diyetisyen" />} />
             <Route path="*" element={<NotFoundPage />} />
