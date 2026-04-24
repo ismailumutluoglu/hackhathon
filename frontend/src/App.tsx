@@ -12,7 +12,7 @@ import AdminProductCreatePage from './pages/AdminProductCreatePage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CheckoutPage from './pages/CheckoutPage';
-import ProducerDetailPage from './pages/ProducerDetailPage';
+import CampaignsPage from './pages/CampaignsPage';
 import { useAuthStore } from './store/authStore';
 import { authService } from './services/auth.service';
 import type { User } from './types';
@@ -38,8 +38,9 @@ function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/urunler" element={<ProductsPage />} />
         <Route path="/urunler/:slug" element={<ProductDetailPage />} />
+        <Route path="/kampanyalar" element={<CampaignsPage />} />
         <Route path="/ureticiler" element={<Navigate to="/urunler" replace />} />
-        <Route path="/ureticiler/:slug" element={<ProducerDetailPage />} />
+        <Route path="/ureticiler/:slug" element={<Navigate to="/urunler" replace />} />
         <Route path="/diyetisyen" element={<AIDietitianPage />} />
         <Route path="/profil" element={<ProfilePage />} />
         <Route path="/siparislerim" element={<OrdersPage />} />
