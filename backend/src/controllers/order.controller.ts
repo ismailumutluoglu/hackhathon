@@ -42,7 +42,7 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
 
     const shippingFee = subtotal >= 500 ? 0 : 29.90;
     const total = subtotal + shippingFee;
-    const orderNumber = await generateOrderNumber();
+    const orderNumber = generateOrderNumber();
 
     const order = await Order.create({
       orderNumber,

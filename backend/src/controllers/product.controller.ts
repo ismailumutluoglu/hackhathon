@@ -6,11 +6,15 @@ import { slugify } from '../utils/slugify';
 
 export async function getProducts(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const { category, search, minPrice, maxPrice, page = 1, limit = 12, sort = '-createdAt' } = req.query;
+    const { category, search, minPrice, maxPrice, page = 1, limit = 12, sort = '-createdAt', isCampaign } = req.query;
 
     const filter: any = { isActive: true };
     if (category) filter.category = category;
     if (search) filter.$text = { $search: search as string };
+    if (isCampaign === 'true') {
+      filter.isCampaign = true;
+      filter.campaignEndsAt = { $gt: new Date() };
+    }
     if (minPrice || maxPrice) {
       filter.price = {};
       if (minPrice) filter.price.$gte = Number(minPrice);
