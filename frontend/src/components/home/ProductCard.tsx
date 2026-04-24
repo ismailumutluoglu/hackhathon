@@ -45,7 +45,7 @@ export default function ProductCard({ product }: Props) {
                 -{discountPercent}%
               </div>
             )}
-            {product.producer.isVerified && (
+            {product.producer?.isVerified && (
               <div className="absolute top-2 right-2 bg-primary-500 text-white p-1 rounded-full" title="Onaylı Üretici">
                 <CheckCircle className="w-3.5 h-3.5" />
               </div>
@@ -64,10 +64,12 @@ export default function ProductCard({ product }: Props) {
             </div>
 
             {/* Producer */}
-            <div className="flex items-center gap-1 text-xs text-stone-500 mb-3">
-              <MapPin className="w-3 h-3" />
-              <span>{product.producer.name} · {product.producer.location.city}</span>
-            </div>
+            {product.producer && (
+              <div className="flex items-center gap-1 text-xs text-stone-500 mb-3">
+                <MapPin className="w-3 h-3" />
+                <span>{product.producer.name}{product.producer.location?.city ? ` · ${product.producer.location.city}` : ''}</span>
+              </div>
+            )}
 
             {/* Rating */}
             {product.reviewCount > 0 && (

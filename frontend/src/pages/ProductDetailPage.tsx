@@ -86,7 +86,7 @@ export default function ProductDetailPage() {
             <span className="text-xs font-medium bg-primary-100 text-primary-700 px-3 py-1 rounded-full capitalize">
               {product.category}
             </span>
-            {product.producer.isVerified && (
+            {product.producer?.isVerified && (
               <span className="text-xs font-medium bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-1">
                 <CheckCircle className="w-3 h-3" /> Onaylı Üretici
               </span>
@@ -119,24 +119,26 @@ export default function ProductDetailPage() {
           </div>
 
           {/* Producer info */}
-          <Link
-            to={`/ureticiler/${product.producer.slug}`}
-            className="flex items-center gap-3 p-4 bg-stone-50 rounded-2xl hover:bg-primary-50 transition-colors mb-6 group"
-          >
-            <img
-              src={product.producer.avatar || 'https://placehold.co/48x48/e8f5e9/3d8b37?text=🧑‍🌾'}
-              alt={product.producer.name}
-              className="w-12 h-12 rounded-full object-cover"
-            />
-            <div className="flex-1">
-              <p className="font-semibold text-stone-800 group-hover:text-primary-700">{product.producer.name}</p>
-              <div className="flex items-center gap-1 text-sm text-stone-500">
-                <MapPin className="w-3.5 h-3.5" />
-                {product.producer.location.city} · {product.producer.location.farmName}
+          {product.producer && (
+            <Link
+              to={`/ureticiler/${product.producer.slug}`}
+              className="flex items-center gap-3 p-4 bg-stone-50 rounded-2xl hover:bg-primary-50 transition-colors mb-6 group"
+            >
+              <img
+                src={product.producer.avatar || 'https://placehold.co/48x48/e8f5e9/3d8b37?text=🧑‍🌾'}
+                alt={product.producer.name}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div className="flex-1">
+                <p className="font-semibold text-stone-800 group-hover:text-primary-700">{product.producer.name}</p>
+                <div className="flex items-center gap-1 text-sm text-stone-500">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {product.producer.location?.city}{product.producer.location?.farmName ? ` · ${product.producer.location.farmName}` : ''}
+                </div>
               </div>
-            </div>
-            <ChevronLeft className="w-4 h-4 text-stone-400 rotate-180" />
-          </Link>
+              <ChevronLeft className="w-4 h-4 text-stone-400 rotate-180" />
+            </Link>
+          )}
 
           {/* Harvest & origin */}
           <div className="grid grid-cols-2 gap-3 mb-6">

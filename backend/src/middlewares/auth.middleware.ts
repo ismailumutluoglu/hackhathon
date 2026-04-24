@@ -41,8 +41,8 @@ export function adminMiddleware(req: AuthRequest, _res: Response, next: NextFunc
 }
 
 export function adminOrProducerMiddleware(req: AuthRequest, _res: Response, next: NextFunction): void {
-  if (req.userRole !== 'admin' && req.userRole !== 'producer' && req.userRole !== 'customer') {
-    return next(new AppError('Bu işlem için giriş yapmış kullanıcı olmanız gerekiyor.', 403));
+  if (req.userRole !== 'admin' && req.userRole !== 'producer') {
+    return next(new AppError('Bu işlem için admin veya üretici yetkisi gerekiyor.', 403));
   }
   next();
 }

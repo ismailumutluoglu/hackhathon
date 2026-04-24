@@ -14,4 +14,9 @@ export const producerService = {
     const res = await api.get<ProducersResponse>('/producers', { params });
     return res.data;
   },
+
+  async getProducer(slug: string) {
+    const res = await api.get<{ success: boolean; producer: Producer }>(`/producers/${slug}`);
+    return res.data.producer;
+  },
 };

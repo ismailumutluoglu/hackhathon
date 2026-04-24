@@ -6,23 +6,28 @@ import { productService } from '../../services/product.service';
 import ProductCard from './ProductCard';
 
 export default function FeaturedProducts() {
-  const { data: products, isLoading } = useQuery({
-    queryKey: ['featured-products'],
-    queryFn: productService.getFeatured,
+  const { data, isLoading } = useQuery({
+    queryKey: ['all-products-marquee'],
+    queryFn: () => productService.getProducts({ limit: 24, sort: '-createdAt' }),
   });
 
+  const items = data?.products ?? [];
+  const filled = items.length === 0 ? [] : items.length < 5
+    ? [...items, ...items, ...items, ...items]
+    : [...items, ...items];
+
   return (
-    <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-16 overflow-hidden">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="flex items-end justify-between mb-10"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-end justify-between mb-10"
       >
         <div>
-          <p className="text-primary-600 font-medium text-sm uppercase tracking-wider mb-2">Seçilmiş Ürünler</p>
+          <p className="text-primary-600 font-medium text-sm uppercase tracking-wider mb-2">Tüm Ürünler</p>
           <h2 className="font-display text-3xl lg:text-4xl font-bold text-stone-800">
-            Bu Hafta Öne Çıkanlar
+            Taze Gelenler
           </h2>
         </div>
         <Link
@@ -34,9 +39,9 @@ export default function FeaturedProducts() {
       </motion.div>
 
       {isLoading ? (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-white rounded-2xl overflow-hidden animate-pulse">
+        <div className="flex gap-6 px-8">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-56 bg-white rounded-2xl overflow-hidden animate-pulse">
               <div className="aspect-square bg-stone-200" />
               <div className="p-4 space-y-3">
                 <div className="h-4 bg-stone-200 rounded w-3/4" />
@@ -46,33 +51,26 @@ export default function FeaturedProducts() {
             </div>
           ))}
         </div>
+      ) : filled.length === 0 ? (
+        <div className="max-w-7xl mx-auto px-4 text-center py-10 text-stone-400">
+          Henüz ürün eklenmemiş.
+        </div>
       ) : (
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          variants={{ visible: { transition: { staggerChildren: 0.08 } } }}
-          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
-        >
-          {(products || []).map((product) => (
-            <motion.div
-              key={product._id}
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0 },
-              }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </motion.div>
+        <div className="marquee-track relative">
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-[#fef9ee] to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-[#fef9ee] to-transparent z-10 pointer-events-none" />
+          <div className="flex animate-marquee gap-6 w-max py-2 px-4">
+            {filled.map((product, i) => (
+              <div key={`${product._id}-${i}`} className="flex-shrink-0 w-56">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
-      <div className="text-center mt-8 sm:hidden">
-        <Link
-          to="/urunler"
-          className="inline-flex items-center gap-2 text-primary-600 font-medium"
-        >
+      <div className="text-center mt-8 sm:hidden max-w-7xl mx-auto px-4">
+        <Link to="/urunler" className="inline-flex items-center gap-2 text-primary-600 font-medium">
           Tüm Ürünleri Gör <ArrowRight className="w-4 h-4" />
         </Link>
       </div>

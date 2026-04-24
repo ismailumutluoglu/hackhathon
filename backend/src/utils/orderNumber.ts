@@ -1,8 +1,6 @@
-import { Order } from '../models/Order';
-
-export async function generateOrderNumber(): Promise<string> {
+export function generateOrderNumber(): string {
   const year = new Date().getFullYear();
-  const count = await Order.countDocuments();
-  const padded = String(count + 1).padStart(5, '0');
-  return `TAZE-${year}-${padded}`;
+  const random = Math.random().toString(36).substring(2, 7).toUpperCase();
+  const timestamp = Date.now().toString(36).toUpperCase().slice(-4);
+  return `TAZE-${year}-${timestamp}${random}`;
 }
