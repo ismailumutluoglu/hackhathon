@@ -5,8 +5,8 @@ export interface User {
   phone?: string;
   role: 'customer' | 'admin' | 'producer';
   avatar?: string;
-  addresses: Address[];
-  healthProfile: HealthProfile;
+  addresses?: Address[];
+  healthProfile?: HealthProfile;
 }
 
 export interface HealthProfile {

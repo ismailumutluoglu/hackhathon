@@ -38,7 +38,7 @@ export default function Footer() {
               <li><Link to="/urunler" className="hover:text-white transition-colors">Tüm Ürünler</Link></li>
               
               <li><Link to="/diyetisyen" className="hover:text-white transition-colors">AI Diyetisyen</Link></li>
-              <li><Link to="/urunler?category=kampanya" className="hover:text-white transition-colors">Kampanyalar</Link></li>
+              <li><Link to="/urunler?isCampaign=true" className="hover:text-white transition-colors">Kampanyalar</Link></li>
             </ul>
           </div>
 
