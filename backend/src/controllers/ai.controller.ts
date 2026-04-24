@@ -5,18 +5,28 @@ import { User } from '../models/User';
 import { AIRecommendation } from '../models/AIRecommendation';
 import { AppError } from '../middlewares/error.middleware';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import { ENV } from '../config/env';
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY || 'missing_key' });
+function createGroqClient(): Groq {
+  const apiKey = (ENV.GROQ_API_KEY || '').trim();
+
+  if (!apiKey || apiKey === 'your_groq_api_key_here') {
+    throw new AppError('AI servisi yapılandırılmamış. Geçerli bir GROQ_API_KEY tanımlayın.', 503);
+  }
+
+  return new Groq({ apiKey });
+}
 
 export async function getRecommendations(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const startTime = Date.now();
     const { userQuery } = req.body;
+    const client = createGroqClient();
 
     const user = await User.findById(req.userId).select('healthProfile');
     if (!user) throw new AppError('Kullanıcı bulunamadı.', 404);
 
-    const healthProfile = user.healthProfile;
+    const healthProfile = user.healthProfile ?? { conditions: [], goals: [], dietaryRestrictions: [], allergies: [] };
 
     // Aktif ürünleri çek (AI prompt için optimize edilmiş alan seçimi)
     const products = await Product.find({ isActive: true, stock: { $gt: 0 } })
@@ -125,7 +135,14 @@ Aşağıdaki JSON formatında yanıt ver (maksimum 6 öneri, 3 kaçınılacak):
       .populate('response.avoidList.product', 'name slug images');
 
     res.json({ success: true, recommendation: populated, sessionId });
-  } catch (err) { next(err); }
+  } catch (err: any) {
+    if (err?.status === 401 || err?.error?.error?.code === 'invalid_api_key') {
+      next(new AppError('GROQ_API_KEY geçersiz görünüyor. Lütfen .env dosyasına yeni bir Groq API anahtarı girip sunucuyu yeniden başlatın.', 502));
+      return;
+    }
+
+    next(err);
+  }
 }
 
 export async function getHistory(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
