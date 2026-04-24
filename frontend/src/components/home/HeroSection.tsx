@@ -59,10 +59,6 @@ export default function HeroSection() {
               transition={{ delay: 0.3, duration: 0.6 }}
               className="inline-flex items-center gap-2 bg-white/15 backdrop-blur px-4 py-2 rounded-full text-sm font-medium mb-6 border border-white/20"
             >
-<<<<<<< HEAD
-              <Leaf className="w-4 h-4" />
-              Doğadan, Sağlıklı Yaşam.
-=======
               <motion.span
                 animate={{ rotate: [0, 15, -10, 0] }}
                 transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
@@ -70,7 +66,6 @@ export default function HeroSection() {
                 <Leaf className="w-4 h-4 text-earth-300" />
               </motion.span>
               İlaçsız Tarım · Organik · Sağlıklı
->>>>>>> 02f3b533b0169472aab058898e59abc544f00a84
             </motion.div>
 
             <motion.h1
@@ -131,11 +126,6 @@ export default function HeroSection() {
               {[
                 { icon: <Shield className="w-4 h-4" />, text: 'Sertifikalı Organik' },
                 { icon: <Truck className="w-4 h-4" />, text: '500₺ Üzeri Kargo Bedava' },
-<<<<<<< HEAD
-                { icon: <Leaf className="w-4 h-4" />, text: 'İlaç Yok' },
-              ].map((badge) => (
-                <div key={badge.text} className="flex items-center gap-2 text-sm text-primary-200">
-=======
                 { icon: <Star className="w-4 h-4 fill-earth-300 text-earth-300" />, text: '4.9 Müşteri Puanı' },
               ].map((badge, i) => (
                 <motion.div
@@ -145,7 +135,6 @@ export default function HeroSection() {
                   transition={{ delay: 1.3 + i * 0.1 }}
                   className="flex items-center gap-2 text-sm text-primary-200"
                 >
->>>>>>> 02f3b533b0169472aab058898e59abc544f00a84
                   {badge.icon}
                   <span>{badge.text}</span>
                 </motion.div>

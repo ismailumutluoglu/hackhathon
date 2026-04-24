@@ -77,27 +77,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-<<<<<<< HEAD
-        <Routes>
-          <Route path="/giris" element={<LoginPage />} />
-          <Route path="/kayit" element={<RegisterPage />} />
-
-          <Route element={<Layout />}>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/urunler" element={<ProductsPage />} />
-            <Route path="/urunler/:slug" element={<ProductDetailPage />} />
-            <Route path="/admin" element={<AdminProductCreatePage />} />
-            <Route path="/admin/urun-ekle" element={<AdminProductCreatePage />} />
-            <Route path="/ureticiler" element={<ComingSoonPage title="Ureticiler" />} />
-            <Route path="/diyetisyen" element={<AIDietitianPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-=======
         <AppRoutes />
->>>>>>> 02f3b533b0169472aab058898e59abc544f00a84
       </BrowserRouter>
     </QueryClientProvider>
   );
