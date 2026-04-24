@@ -7,6 +7,7 @@ import ProductsPage from './pages/ProductsPage';
 import ProductDetailPage from './pages/ProductDetailPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import AIDietitianPage from './pages/AIDietitianPage';
 import AdminProductCreatePage from './pages/AdminProductCreatePage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
@@ -39,7 +40,7 @@ function AppRoutes() {
         <Route path="/urunler/:slug" element={<ProductDetailPage />} />
         <Route path="/ureticiler" element={<Navigate to="/urunler" replace />} />
         <Route path="/ureticiler/:slug" element={<ProducerDetailPage />} />
-        <Route path="/diyetisyen" element={<ComingSoonPage title="AI Diyetisyen" />} />
+        <Route path="/diyetisyen" element={<AIDietitianPage />} />
         <Route path="/profil" element={<ProfilePage />} />
         <Route path="/siparislerim" element={<OrdersPage />} />
         <Route path="/siparislerim/:id" element={<Navigate to="/siparislerim" replace />} />
