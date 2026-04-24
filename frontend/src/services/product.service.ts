@@ -42,4 +42,26 @@ export const productService = {
     const res = await api.post(`/products/${productId}/reviews`, data);
     return res.data;
   },
+
+  async createProduct(data: {
+    name: string;
+    description: string;
+    producer: string;
+    category: string;
+    price: number;
+    unit: string;
+    stock: number;
+    origin: { city: string; district?: string; farmName?: string };
+    images?: string[];
+    tags?: string[];
+    healthBenefits?: string[];
+    isFeatured?: boolean;
+    isCampaign?: boolean;
+    discountedPrice?: number;
+    campaignOriginalPrice?: number;
+    campaignEndsAt?: string;
+  }) {
+    const res = await api.post<{ success: boolean; product: Product }>('/products', data);
+    return res.data.product;
+  },
 };

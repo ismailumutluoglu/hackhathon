@@ -1,0 +1,37 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const helmet_1 = __importDefault(require("helmet"));
+const express_rate_limit_1 = __importDefault(require("express-rate-limit"));
+const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize"));
+const env_1 = require("./config/env");
+const auth_routes_1 = __importDefault(require("./routes/auth.routes"));
+const user_routes_1 = __importDefault(require("./routes/user.routes"));
+const product_routes_1 = __importDefault(require("./routes/product.routes"));
+const producer_routes_1 = __importDefault(require("./routes/producer.routes"));
+const order_routes_1 = __importDefault(require("./routes/order.routes"));
+const ai_routes_1 = __importDefault(require("./routes/ai.routes"));
+const error_middleware_1 = require("./middlewares/error.middleware");
+const app = (0, express_1.default)();
+app.use((0, helmet_1.default)());
+app.use((0, express_mongo_sanitize_1.default)());
+app.use((0, cors_1.default)({ origin: env_1.ENV.CLIENT_URL, credentials: true }));
+const limiter = (0, express_rate_limit_1.default)({ windowMs: 15 * 60 * 1000, max: 100 });
+const aiLimiter = (0, express_rate_limit_1.default)({ windowMs: 60 * 60 * 1000, max: 20, message: { success: false, message: 'Saatlik AI istek limitine ulaştınız.' } });
+app.use('/api/', limiter);
+app.use('/api/ai', aiLimiter);
+app.use(express_1.default.json({ limit: '10kb' }));
+app.get('/api/health', (_req, res) => res.json({ status: 'ok', env: env_1.ENV.NODE_ENV }));
+app.use('/api/auth', auth_routes_1.default);
+app.use('/api/users', user_routes_1.default);
+app.use('/api/products', product_routes_1.default);
+app.use('/api/producers', producer_routes_1.default);
+app.use('/api/orders', order_routes_1.default);
+app.use('/api/ai', ai_routes_1.default);
+app.use(error_middleware_1.errorMiddleware);
+exports.default = app;
+//# sourceMappingURL=app.js.map
