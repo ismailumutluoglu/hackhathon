@@ -231,3 +231,39 @@ Takim ici kurulum sorunu yasarsaniz:
 - Isletim sistemi bilgisini ekleyin
 
 Bu bilgilerle sorunlar cok daha hizli cozulur.
+
+## 12. GitHub'dan Yayinlama (Frontend)
+
+Bu repoda otomatik deploy workflow'u eklidir:
+- [.github/workflows/deploy-frontend-pages.yml](.github/workflows/deploy-frontend-pages.yml)
+
+Calisma sekli:
+1. `dev` branch'ine push yapildiginda workflow tetiklenir.
+2. `frontend` klasoru build edilir.
+3. Build sonucu GitHub Pages'e deploy edilir.
+
+### 12.1 GitHub Pages ayari
+
+Repo ayarlarinda su adimlari yapin:
+1. GitHub'da repo > Settings > Pages
+2. Source olarak `GitHub Actions` secin
+
+Bu ayari bir kere yaptiktan sonra her `dev` push'unda yayin otomatik guncellenir.
+
+### 12.2 Yayin URL'i
+
+Repo adresinize gore sayfa su adreste olur:
+- `https://ismailumutluoglu.github.io/hackhathon/`
+
+### 12.3 Onemli Not (Backend)
+
+GitHub Pages sadece statik frontend yayinlar.
+Backend (Node.js + MongoDB) GitHub Pages'te calismaz.
+
+Backend icin ayri bir servis kullanin:
+1. Render
+2. Railway
+3. Fly.io
+4. Azure App Service
+
+Frontend'i backend'e baglamak icin production ortaminda frontend tarafinda API base URL'i ayrica ayarlanmalidir.
