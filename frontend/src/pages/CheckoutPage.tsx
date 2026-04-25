@@ -18,7 +18,7 @@ const BANK_INFO = {
 };
 
 export default function CheckoutPage() {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, user } = useAuthStore();
   const { items, getTotal, clearCart } = useCartStore();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
@@ -35,6 +35,7 @@ export default function CheckoutPage() {
   const [ibanCopied, setIbanCopied] = useState(false);
 
   if (!isAuthenticated) return <Navigate to="/giris" replace />;
+  if (user?.role === 'admin' || user?.role === 'producer') return <Navigate to="/admin/dashboard" replace />;
   if (items.length === 0 && !orderPlaced) return <Navigate to="/urunler" replace />;
 
   const total = getTotal();

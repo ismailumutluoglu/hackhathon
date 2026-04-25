@@ -2,11 +2,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Trash2, Plus, Minus } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useCartStore } from '../../store/cartStore';
+import { useAuthStore } from '../../store/authStore';
 import { formatPrice } from '../../lib/utils';
 
 export default function CartDrawer() {
   const { items, isDrawerOpen, setDrawerOpen, removeItem, updateQuantity, getTotal } = useCartStore();
+  const { user } = useAuthStore();
   const total = getTotal();
+  const isAdmin = user?.role === 'admin' || user?.role === 'producer';
 
   return (
     <AnimatePresence>
@@ -116,18 +119,26 @@ export default function CartDrawer() {
                   <span className="text-stone-600">Ara Toplam</span>
                   <span className="font-bold text-lg text-primary-700">{formatPrice(total)}</span>
                 </div>
-                {total < 500 && (
-                  <p className="text-xs text-stone-400 text-center">
-                    {formatPrice(500 - total)} daha ekleyin, kargo ücretsiz!
-                  </p>
+                {isAdmin ? (
+                  <div className="text-center text-xs text-stone-400 bg-stone-50 rounded-2xl py-3 px-4">
+                    Admin hesaplarıyla sipariş verilemez.
+                  </div>
+                ) : (
+                  <>
+                    {total < 500 && (
+                      <p className="text-xs text-stone-400 text-center">
+                        {formatPrice(500 - total)} daha ekleyin, kargo ücretsiz!
+                      </p>
+                    )}
+                    <Link
+                      to="/odeme"
+                      onClick={() => setDrawerOpen(false)}
+                      className="block w-full bg-primary-500 text-white text-center py-3 rounded-full font-semibold hover:bg-primary-600 transition-colors"
+                    >
+                      Siparişi Tamamla
+                    </Link>
+                  </>
                 )}
-                <Link
-                  to="/odeme"
-                  onClick={() => setDrawerOpen(false)}
-                  className="block w-full bg-primary-500 text-white text-center py-3 rounded-full font-semibold hover:bg-primary-600 transition-colors"
-                >
-                  Siparişi Tamamla
-                </Link>
               </div>
             )}
           </motion.div>
