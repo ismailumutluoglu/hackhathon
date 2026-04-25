@@ -25,7 +25,7 @@ export async function authMiddleware(req: AuthRequest, _res: Response, next: Nex
     }
 
     req.userId = decoded.id;
-    req.userRole = decoded.role;
+    req.userRole = user.role;
     next();
   } catch (err) {
     if (err instanceof AppError) return next(err);
