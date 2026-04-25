@@ -4,12 +4,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShoppingBag, MapPin, CreditCard, Truck,
   Phone, User, Home, ChevronRight, Building2, Wallet,
-  Lock, Eye, EyeOff, Copy, CheckCircle2,
+  Lock, Eye, EyeOff, Copy, CheckCircle2, Tag, X,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useCartStore } from '../store/cartStore';
 import { orderService } from '../services/order.service';
 import { formatPrice } from '../lib/utils';
+
+const PROMO_CODES: Record<string, { type: 'percent' | 'shipping'; value: number; label: string }> = {
+  TAZE5:    { type: 'percent',  value: 5,  label: '%5 İndirim' },
+  TAZE10:   { type: 'percent',  value: 10, label: '%10 İndirim' },
+  TAZE15:   { type: 'percent',  value: 15, label: '%15 İndirim' },
+  TAZE20:   { type: 'percent',  value: 20, label: '%20 İndirim' },
+  TAZE25:   { type: 'percent',  value: 25, label: '%25 İndirim' },
+  KARGO0:   { type: 'shipping', value: 0,  label: 'Ücretsiz Kargo' },
+  UCRETSIZ: { type: 'percent',  value: 50, label: '%50 İndirim' },
+};
 
 const BANK_INFO = {
   iban: 'TR12 0001 2345 6789 0123 4567 89',
@@ -33,15 +43,31 @@ export default function CheckoutPage() {
   const [card, setCard] = useState({ number: '', name: '', expiry: '', cvv: '' });
   const [showCvv, setShowCvv] = useState(false);
   const [ibanCopied, setIbanCopied] = useState(false);
+  const [promoInput, setPromoInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<typeof PROMO_CODES[string] | null>(null);
+  const [promoError, setPromoError] = useState('');
 
   if (!isAuthenticated) return <Navigate to="/giris" replace />;
   if (user?.role === 'admin' || user?.role === 'producer') return <Navigate to="/admin/dashboard" replace />;
   if (items.length === 0 && !orderPlaced) return <Navigate to="/urunler" replace />;
 
   const total = getTotal();
-  const shippingFee = total >= 500 ? 0 : 49.90;
-  const grandTotal = total + shippingFee;
-  const freeShippingProgress = Math.min((total / 500) * 100, 100);
+  const promoDiscount = appliedPromo?.type === 'percent' ? Math.round(total * appliedPromo.value / 100 * 100) / 100 : 0;
+  const discountedTotal = total - promoDiscount;
+  const shippingFee = appliedPromo?.type === 'shipping' ? 0 : (discountedTotal >= 500 ? 0 : 49.90);
+  const grandTotal = discountedTotal + shippingFee;
+  const freeShippingProgress = Math.min((discountedTotal / 500) * 100, 100);
+
+  function applyPromo() {
+    const code = promoInput.trim().toUpperCase();
+    const promo = PROMO_CODES[code];
+    if (!promo) { setPromoError('Geçersiz kod. Tekrar dene.'); return; }
+    setAppliedPromo(promo);
+    setPromoError('');
+    setPromoInput('');
+  }
+
+  function removePromo() { setAppliedPromo(null); setPromoError(''); }
 
   function updateAddress(key: keyof typeof address, value: string) {
     setAddress(prev => ({ ...prev, [key]: value }));
@@ -422,10 +448,52 @@ export default function CheckoutPage() {
               )}
 
               <div className="p-5">
+
+                {/* Promo code */}
+                <div className="mb-4">
+                  {appliedPromo ? (
+                    <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-2xl px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-bold text-green-700">{appliedPromo.label}</span>
+                      </div>
+                      <button onClick={removePromo} className="text-stone-400 hover:text-red-500 transition-colors">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-stone-400" />
+                          <input
+                            value={promoInput}
+                            onChange={e => { setPromoInput(e.target.value.toUpperCase()); setPromoError(''); }}
+                            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), applyPromo())}
+                            placeholder="İndirim kodu"
+                            className="w-full pl-9 pr-3 py-2.5 border border-stone-200 rounded-xl bg-stone-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 text-sm font-mono uppercase"
+                          />
+                        </div>
+                        <button type="button" onClick={applyPromo}
+                          className="px-4 py-2.5 bg-primary-500 hover:bg-primary-600 text-white text-sm font-bold rounded-xl transition-colors flex-shrink-0">
+                          Uygula
+                        </button>
+                      </div>
+                      {promoError && <p className="text-xs text-red-500">{promoError}</p>}
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between text-sm text-stone-500">
                     <span>Ara Toplam</span><span>{formatPrice(total)}</span>
                   </div>
+                  {promoDiscount > 0 && (
+                    <div className="flex justify-between text-sm text-green-600 font-semibold">
+                      <span className="flex items-center gap-1"><Tag className="w-3.5 h-3.5" />İndirim</span>
+                      <span>-{formatPrice(promoDiscount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm text-stone-500">
                     <span className="flex items-center gap-1"><Truck className="w-3.5 h-3.5" />Kargo</span>
                     {shippingFee === 0 ? <span className="text-green-600 font-semibold">Ücretsiz</span> : <span>{formatPrice(shippingFee)}</span>}
