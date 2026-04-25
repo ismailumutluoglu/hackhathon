@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.100.1",
+    "@types/three": "^0.184.0",
     "axios": "^1.15.2",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
@@ -19,6 +20,7 @@
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2",
     "tailwind-merge": "^3.5.0",
+    "three": "^0.184.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import HeroSection from '../components/home/HeroSection';
 import CampaignCountdown from '../components/home/CampaignCountdown';
 import FeaturedProducts from '../components/home/FeaturedProducts';
+import SpinWheelSection from '../components/home/SpinWheelSection';
+import TestimonialsSection from '../components/home/TestimonialsSection';
 import { productService } from '../services/product.service';
 
 const features = [
@@ -203,6 +205,12 @@ export default function HomePage() {
 
       {/* ── Featured Products Marquee ── */}
       <FeaturedProducts />
+
+      {/* ── Spin Wheel ── */}
+      <SpinWheelSection />
+
+      {/* ── Testimonials ── */}
+      <TestimonialsSection />
 
       {/* ── AI CTA ── */}
       <section
