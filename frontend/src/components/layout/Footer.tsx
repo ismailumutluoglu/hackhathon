@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Leaf, Instagram, Youtube, Mail, MapPin, ArrowUpRight } from 'lucide-react';
+import { Leaf, Camera, Play, Mail, MapPin, ArrowUpRight } from 'lucide-react';
 
 const links = {
   kesfet: [
@@ -16,8 +16,8 @@ const links = {
 };
 
 const socials = [
-  { href: '#', icon: Instagram, label: 'Instagram' },
-  { href: '#', icon: Youtube,   label: 'YouTube'   },
+  { href: '#', icon: Camera, label: 'Instagram' },
+  { href: '#', icon: Play,   label: 'YouTube'   },
   { href: 'mailto:merhaba@tazekoy.com', icon: Mail, label: 'E-posta' },
 ];
 
