@@ -25,7 +25,7 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
 
       orderItems.push({
         product: product._id,
-        producer: (product.producer as any)._id,
+        producer: product.producer ? (product.producer as any)._id : undefined,
         name: product.name,
         image: product.images[0] || '',
         price,
@@ -64,7 +64,11 @@ export async function createOrder(req: AuthRequest, res: Response, next: NextFun
 
 export async function getUserOrders(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
-    const orders = await Order.find({ user: req.userId }).sort('-createdAt').select('-__v');
+    const isAdmin = req.userRole === 'admin';
+    const filter = isAdmin ? {} : { user: req.userId };
+    const query = Order.find(filter).sort('-createdAt').select('-__v');
+    if (isAdmin) query.populate('user', 'name email');
+    const orders = await query;
     res.json({ success: true, orders });
   } catch (err) { next(err); }
 }

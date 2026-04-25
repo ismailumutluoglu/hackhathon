@@ -12,6 +12,7 @@ import AdminProductCreatePage from './pages/AdminProductCreatePage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CheckoutPage from './pages/CheckoutPage';
+import OrderConfirmationPage from './pages/OrderConfirmationPage';
 import CampaignsPage from './pages/CampaignsPage';
 import { useAuthStore } from './store/authStore';
 import { authService } from './services/auth.service';
@@ -46,6 +47,7 @@ function AppRoutes() {
         <Route path="/siparislerim" element={<OrdersPage />} />
         <Route path="/siparislerim/:id" element={<Navigate to="/siparislerim" replace />} />
         <Route path="/odeme" element={<CheckoutPage />} />
+        <Route path="/siparis-onay" element={<OrderConfirmationPage />} />
         <Route path="/admin" element={<AdminProductCreatePage />} />
         <Route path="/admin/urun-ekle" element={<AdminProductCreatePage />} />
         <Route path="*" element={<NotFoundPage />} />

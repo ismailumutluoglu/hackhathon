@@ -5,7 +5,7 @@ export type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'shipped' | 'd
 export interface IOrderItem {
   _id?: mongoose.Types.ObjectId;
   product: mongoose.Types.ObjectId;
-  producer: mongoose.Types.ObjectId;
+  producer?: mongoose.Types.ObjectId;
   name: string;
   image: string;
   price: number;
@@ -64,7 +64,7 @@ export interface IOrder extends Document {
 
 const OrderItemSchema = new Schema<IOrderItem>({
   product:  { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-  producer: { type: Schema.Types.ObjectId, ref: 'Producer', required: true },
+  producer: { type: Schema.Types.ObjectId, ref: 'Producer' },
   name:     { type: String, required: true },
   image:    { type: String, required: true },
   price:    { type: Number, required: true },

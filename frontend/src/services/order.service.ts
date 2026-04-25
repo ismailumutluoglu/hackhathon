@@ -28,4 +28,9 @@ export const orderService = {
     const res = await api.patch(`/orders/${id}/cancel`);
     return res.data;
   },
+
+  async updateOrderStatus(id: string, status: string, message?: string) {
+    const res = await api.patch(`/orders/admin/${id}/status`, { status, message });
+    return res.data;
+  },
 };

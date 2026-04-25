@@ -139,6 +139,7 @@ export interface StatusUpdate {
 export interface Order {
   _id: string;
   orderNumber: string;
+  user?: { _id: string; name: string; email: string };
   items: {
     product: string | Product;
     name: string;
