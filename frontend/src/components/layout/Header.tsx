@@ -6,12 +6,6 @@ import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
 import { useUIStore } from '../../store/uiStore';
 
-const NAV_LINKS = [
-  { to: '/urunler',    label: 'Ürünler',      icon: Package },
-  { to: '/kampanyalar', label: 'Kampanyalar',  icon: Zap, hot: true },
-  { to: '/diyetisyen', label: 'AI Diyetisyen', icon: null },
-];
-
 export default function Header() {
   const { isAuthenticated, user, logout } = useAuthStore();
   const { getItemCount, toggleDrawer } = useCartStore();
@@ -22,6 +16,16 @@ export default function Header() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const isAdmin = user?.role === 'admin' || user?.role === 'producer';
+
+  const NAV_LINKS = isAdmin ? [
+    { to: '/urunler',         label: 'Ürünler',       hot: false },
+    { to: '/siparislerim',    label: 'Siparişler',     hot: false },
+    { to: '/admin/dashboard', label: 'Ürün Yönetimi', hot: false },
+  ] : [
+    { to: '/urunler',     label: 'Ürünler',       hot: false },
+    { to: '/kampanyalar', label: 'Kampanyalar',    hot: true  },
+    { to: '/diyetisyen',  label: 'AI Diyetisyen', hot: false },
+  ];
 
   function handleLogout() {
     logout();
