@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Package, Tag, DollarSign, BarChart2, ImageIcon,
-  Sparkles, CheckCircle2, AlertCircle, Star, Zap,
+  Package, Tag, DollarSign, ImageIcon,
+  Sparkles, CheckCircle2, AlertCircle, Star,
   ChevronDown,
 } from 'lucide-react';
 import { productService } from '../services/product.service';
