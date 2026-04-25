@@ -17,7 +17,23 @@ const app = express();
 
 app.use(helmet());
 app.use(mongoSanitize());
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+const allowedOrigins = [
+  ENV.CLIENT_URL,
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'https://hackhathon-git-master-ismail-umutluoglus-projects.vercel.app',
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS: izin verilmeyen origin'));
+    }
+  },
+  credentials: true,
+}));
 
 const limiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
 const aiLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, message: { success: false, message: 'Saatlik AI istek limitine ulaştınız.' } });
