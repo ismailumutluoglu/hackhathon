@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingCart, User, Menu, X, Leaf, LayoutDashboard, LogOut, Package, ChevronDown, Zap } from 'lucide-react';
+import { ShoppingCart, User, Menu, X, Leaf, LayoutDashboard, LogOut, Package, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useCartStore } from '../../store/cartStore';
