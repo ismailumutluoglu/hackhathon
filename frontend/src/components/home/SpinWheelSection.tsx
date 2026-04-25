@@ -72,16 +72,25 @@ function buildWheelTexture(): THREE.CanvasTexture {
   return new THREE.CanvasTexture(cv);
 }
 
-export default function SpinWheelSection() {
-  const mountRef  = useRef<HTMLDivElement>(null);
-  const wheelRef  = useRef<THREE.Mesh | null>(null);
-  const rafRef    = useRef<number>(0);
-  const angleRef  = useRef(0);
-  const spinning  = useRef(false);
+type AnimState = {
+  startAngle: number;
+  targetAngle: number;
+  startTime: number;
+  duration: number;
+  winnerIdx: number;
+} | null;
 
-  const [result,   setResult]   = useState<typeof SEGMENTS[0] | null>(null);
-  const [spun,     setSpun]     = useState(false);
-  const [copied,   setCopied]   = useState(false);
+export default function SpinWheelSection() {
+  const mountRef   = useRef<HTMLDivElement>(null);
+  const wheelRef   = useRef<THREE.Mesh | null>(null);
+  const rafRef     = useRef<number>(0);
+  const angleRef   = useRef(0);
+  const animRef    = useRef<AnimState>(null);
+  const spunRef    = useRef(false);
+
+  const [result,     setResult]     = useState<typeof SEGMENTS[0] | null>(null);
+  const [spun,       setSpun]       = useState(false);
+  const [copied,     setCopied]     = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
   const { isAuthenticated } = useAuthStore();
 
@@ -92,7 +101,6 @@ export default function SpinWheelSection() {
     const W = el.clientWidth;
     const H = el.clientHeight;
 
-    // Scene
     const scene    = new THREE.Scene();
     const camera   = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
     camera.position.set(0, 0, 3.2);
@@ -103,21 +111,36 @@ export default function SpinWheelSection() {
     renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
 
-    // Wheel mesh
-    const geo      = new THREE.CircleGeometry(1, 128);
-    const mat      = new THREE.MeshBasicMaterial({ map: buildWheelTexture(), side: THREE.DoubleSide });
-    const wheel    = new THREE.Mesh(geo, mat);
+    const geo  = new THREE.CircleGeometry(1, 128);
+    const mat  = new THREE.MeshBasicMaterial({ map: buildWheelTexture(), side: THREE.DoubleSide });
+    const wheel = new THREE.Mesh(geo, mat);
     scene.add(wheel);
     wheelRef.current = wheel;
 
-    // Edge ring (gives 3-D feel)
-    const edgeGeo  = new THREE.TorusGeometry(1, 0.04, 16, 128);
-    const edgeMat  = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    scene.add(new THREE.Mesh(edgeGeo, edgeMat));
+    const edgeGeo = new THREE.TorusGeometry(1, 0.04, 16, 128);
+    scene.add(new THREE.Mesh(edgeGeo, new THREE.MeshBasicMaterial({ color: 0xffffff })));
 
-    // Render loop — sadece ekrana çizer, animasyon spin() içinde yönetiliyor
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
+
+      // Animasyon aktifse render loop içinde uygula
+      const anim = animRef.current;
+      if (anim) {
+        const elapsed = Date.now() - anim.startTime;
+        const t = Math.min(elapsed / anim.duration, 1);
+        const eased = 1 - Math.pow(1 - t, 4);
+        angleRef.current = anim.startAngle + (anim.targetAngle - anim.startAngle) * eased;
+        wheel.rotation.z = angleRef.current;
+
+        if (t >= 1) {
+          animRef.current = null;
+          setIsSpinning(false);
+          setResult(SEGMENTS[anim.winnerIdx]);
+          setSpun(true);
+          spunRef.current = true;
+        }
+      }
+
       renderer.render(scene, camera);
     };
     loop();
@@ -139,48 +162,27 @@ export default function SpinWheelSection() {
   }, []);
 
   const spin = useCallback(() => {
-    if (spinning.current || spun) return;
+    if (animRef.current || spunRef.current) return;
 
-    // Önce kazananı belirle
-    const winnerIdx = Math.floor(Math.random() * SEGMENTS.length);
-
-    // Y-flip nedeniyle segment i iğnenin altına gelmek için gerekli açı:
-    // targetAngle = (winnerIdx + 0.5) * SEG_ANGLE
-    const baseAngle = (winnerIdx + 0.5) * SEG_ANGLE;
-    const fullSpins = (6 + Math.floor(Math.random() * 4)) * Math.PI * 2;
+    const winnerIdx  = Math.floor(Math.random() * SEGMENTS.length);
+    const baseAngle  = (winnerIdx + 0.5) * SEG_ANGLE;
+    const fullSpins  = (6 + Math.floor(Math.random() * 4)) * Math.PI * 2;
     const startAngle = angleRef.current;
     const targetAngle = Math.ceil(startAngle / (Math.PI * 2)) * (Math.PI * 2) + fullSpins + baseAngle;
 
-    spinning.current = true;
     setIsSpinning(true);
     setResult(null);
 
-    const duration = 4500 + Math.random() * 1500;
-    const startTime = Date.now();
+    animRef.current = {
+      startAngle,
+      targetAngle,
+      startTime: Date.now(),
+      duration: 4500 + Math.random() * 1500,
+      winnerIdx,
+    };
+  }, []);
 
-    cancelAnimationFrame(rafRef.current);
-
-    function animate() {
-      const elapsed = Date.now() - startTime;
-      const t = Math.min(elapsed / duration, 1);
-      // quartic ease-out
-      const eased = 1 - Math.pow(1 - t, 4);
-      angleRef.current = startAngle + (targetAngle - startAngle) * eased;
-      if (wheelRef.current) wheelRef.current.rotation.z = angleRef.current;
-
-      if (t < 1) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        spinning.current = false;
-        setIsSpinning(false);
-        setResult(SEGMENTS[winnerIdx]);
-        setSpun(true);
-      }
-    }
-    rafRef.current = requestAnimationFrame(animate);
-  }, [spun]);
-
-  const reset = () => { setSpun(false); setResult(null); setCopied(false); };
+  const reset = () => { setSpun(false); setResult(null); setCopied(false); spunRef.current = false; };
 
   const copy = () => {
     if (result?.code) {
