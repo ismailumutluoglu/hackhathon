@@ -76,7 +76,6 @@ export default function SpinWheelSection() {
   const mountRef  = useRef<HTMLDivElement>(null);
   const wheelRef  = useRef<THREE.Mesh | null>(null);
   const rafRef    = useRef<number>(0);
-  const speedRef  = useRef(0);
   const angleRef  = useRef(0);
   const spinning  = useRef(false);
 
@@ -116,26 +115,9 @@ export default function SpinWheelSection() {
     const edgeMat  = new THREE.MeshBasicMaterial({ color: 0xffffff });
     scene.add(new THREE.Mesh(edgeGeo, edgeMat));
 
-    // Animate loop
+    // Render loop — sadece ekrana çizer, animasyon spin() içinde yönetiliyor
     const loop = () => {
       rafRef.current = requestAnimationFrame(loop);
-      if (spinning.current) {
-        angleRef.current += speedRef.current;
-        speedRef.current *= 0.987;
-        wheel.rotation.z = angleRef.current;
-
-        if (speedRef.current < 0.003) {
-          spinning.current = false;
-          setIsSpinning(false);
-
-          const norm = ((angleRef.current % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2);
-          // needle is at top (π/2), so winning segment index:
-          const rawIdx = Math.floor(((Math.PI / 2 - norm + Math.PI * 2) % (Math.PI * 2)) / SEG_ANGLE);
-          const idx = ((SEGMENTS.length - rawIdx) % SEGMENTS.length + SEGMENTS.length) % SEGMENTS.length;
-          setResult(SEGMENTS[idx] ?? SEGMENTS[0]);
-          setSpun(true);
-        }
-      }
       renderer.render(scene, camera);
     };
     loop();
@@ -158,10 +140,44 @@ export default function SpinWheelSection() {
 
   const spin = useCallback(() => {
     if (spinning.current || spun) return;
+
+    // Önce kazananı belirle
+    const winnerIdx = Math.floor(Math.random() * SEGMENTS.length);
+
+    // Y-flip nedeniyle segment i iğnenin altına gelmek için gerekli açı:
+    // targetAngle = (winnerIdx + 0.5) * SEG_ANGLE
+    const baseAngle = (winnerIdx + 0.5) * SEG_ANGLE;
+    const fullSpins = (6 + Math.floor(Math.random() * 4)) * Math.PI * 2;
+    const startAngle = angleRef.current;
+    const targetAngle = Math.ceil(startAngle / (Math.PI * 2)) * (Math.PI * 2) + fullSpins + baseAngle;
+
     spinning.current = true;
     setIsSpinning(true);
     setResult(null);
-    speedRef.current = 0.28 + Math.random() * 0.14;
+
+    const duration = 4500 + Math.random() * 1500;
+    const startTime = Date.now();
+
+    cancelAnimationFrame(rafRef.current);
+
+    function animate() {
+      const elapsed = Date.now() - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      // quartic ease-out
+      const eased = 1 - Math.pow(1 - t, 4);
+      angleRef.current = startAngle + (targetAngle - startAngle) * eased;
+      if (wheelRef.current) wheelRef.current.rotation.z = angleRef.current;
+
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(animate);
+      } else {
+        spinning.current = false;
+        setIsSpinning(false);
+        setResult(SEGMENTS[winnerIdx]);
+        setSpun(true);
+      }
+    }
+    rafRef.current = requestAnimationFrame(animate);
   }, [spun]);
 
   const reset = () => { setSpun(false); setResult(null); setCopied(false); };
