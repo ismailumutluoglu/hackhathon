@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: tazekoy-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        value: mongodb+srv://irfantaymas:1453@cluster33.qmvgzmy.mongodb.net/tazekoy
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CLIENT_URL
+        sync: false
