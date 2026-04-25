@@ -1,13 +1,14 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Package, Tag, DollarSign, ImageIcon,
   Sparkles, CheckCircle2, AlertCircle, Star,
-  ChevronDown,
+  ChevronDown, ArrowLeft,
 } from 'lucide-react';
 import { productService } from '../services/product.service';
 import { useAuthStore } from '../store/authStore';
+import type { Product } from '../types';
 
 const CATEGORIES = [
   { value: 'sebze',        label: 'Sebze',         emoji: '🥦' },
@@ -24,6 +25,11 @@ const UNITS = ['kg', 'adet', 'litre', 'gram', 'demet', 'kutu'];
 
 export default function AdminProductCreatePage() {
   const { isAuthenticated, user } = useAuthStore();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const editProduct: Product | undefined = location.state?.product;
+  const isEdit = !!editProduct;
+
   const [isSaving, setIsSaving] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -45,6 +51,29 @@ export default function AdminProductCreatePage() {
     campaignEndsAt: '',
   });
 
+  useEffect(() => {
+    if (editProduct) {
+      setForm({
+        name: editProduct.name,
+        description: editProduct.description,
+        category: editProduct.category,
+        unit: editProduct.unit,
+        price: String(editProduct.price),
+        stock: String(editProduct.stock),
+        imageUrl: editProduct.images?.[0] ?? '',
+        tags: editProduct.tags?.join(', ') ?? '',
+        healthBenefits: editProduct.healthBenefits?.join(', ') ?? '',
+        isFeatured: editProduct.isFeatured,
+        isCampaign: editProduct.isCampaign,
+        discountedPrice: editProduct.discountedPrice ? String(editProduct.discountedPrice) : '',
+        campaignOriginalPrice: editProduct.campaignOriginalPrice ? String(editProduct.campaignOriginalPrice) : '',
+        campaignEndsAt: editProduct.campaignEndsAt
+          ? new Date(editProduct.campaignEndsAt).toISOString().slice(0, 16)
+          : '',
+      });
+    }
+  }, []);
+
   function update<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
@@ -54,34 +83,40 @@ export default function AdminProductCreatePage() {
     setError('');
     setSuccess('');
     setIsSaving(true);
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      category: form.category,
+      price: Number(form.price),
+      unit: form.unit,
+      stock: Number(form.stock),
+      images: form.imageUrl.trim() ? [form.imageUrl.trim()] : [],
+      tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
+      healthBenefits: form.healthBenefits.split(',').map((t) => t.trim()).filter(Boolean),
+      isFeatured: form.isFeatured,
+      isCampaign: form.isCampaign,
+      discountedPrice: form.discountedPrice ? Number(form.discountedPrice) : undefined,
+      campaignOriginalPrice: form.campaignOriginalPrice ? Number(form.campaignOriginalPrice) : undefined,
+      campaignEndsAt: form.campaignEndsAt || undefined,
+    };
     try {
-      await productService.createProduct({
-        name: form.name.trim(),
-        description: form.description.trim(),
-        category: form.category,
-        price: Number(form.price),
-        unit: form.unit,
-        stock: Number(form.stock),
-        origin: { city: 'Belirtilmedi', district: '', farmName: '' },
-        images: form.imageUrl.trim() ? [form.imageUrl.trim()] : [],
-        tags: form.tags.split(',').map((t) => t.trim()).filter(Boolean),
-        healthBenefits: form.healthBenefits.split(',').map((t) => t.trim()).filter(Boolean),
-        isFeatured: form.isFeatured,
-        isCampaign: form.isCampaign,
-        discountedPrice: form.discountedPrice ? Number(form.discountedPrice) : undefined,
-        campaignOriginalPrice: form.campaignOriginalPrice ? Number(form.campaignOriginalPrice) : undefined,
-        campaignEndsAt: form.campaignEndsAt || undefined,
-      });
-      setSuccess('Ürün başarıyla eklendi!');
-      setForm((prev) => ({
-        ...prev,
-        name: '', description: '', imageUrl: '', tags: '',
-        healthBenefits: '', price: '', stock: '',
-        discountedPrice: '', campaignOriginalPrice: '', campaignEndsAt: '',
-      }));
+      if (isEdit && editProduct) {
+        await productService.updateProduct(editProduct._id, payload);
+        setSuccess('Ürün başarıyla güncellendi!');
+        setTimeout(() => navigate('/admin/dashboard'), 1200);
+      } else {
+        await productService.createProduct({ ...payload, origin: { city: 'Belirtilmedi', district: '', farmName: '' } });
+        setSuccess('Ürün başarıyla eklendi!');
+        setForm((prev) => ({
+          ...prev,
+          name: '', description: '', imageUrl: '', tags: '',
+          healthBenefits: '', price: '', stock: '',
+          discountedPrice: '', campaignOriginalPrice: '', campaignEndsAt: '',
+        }));
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Ürün eklenemedi. Alanları kontrol edin.');
+      setError(err.response?.data?.message || 'İşlem başarısız. Alanları kontrol edin.');
     } finally {
       setIsSaving(false);
     }
@@ -120,9 +155,14 @@ export default function AdminProductCreatePage() {
       {/* Header */}
       <div className="bg-white border-b border-stone-100 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-wider text-primary-600 font-bold">Yönetim Paneli</p>
-            <h1 className="font-display text-2xl font-bold text-stone-800">Yeni Ürün Ekle</h1>
+          <div className="flex items-center gap-3">
+            <Link to="/admin/dashboard" className="w-9 h-9 bg-stone-50 border border-stone-200 rounded-xl flex items-center justify-center hover:bg-stone-100 transition-colors">
+              <ArrowLeft className="w-4 h-4 text-stone-600" />
+            </Link>
+            <div>
+              <p className="text-xs uppercase tracking-wider text-primary-600 font-bold">Yönetim Paneli</p>
+              <h1 className="font-display text-2xl font-bold text-stone-800">{isEdit ? 'Ürünü Düzenle' : 'Yeni Ürün Ekle'}</h1>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-xs text-stone-500 bg-stone-50 px-3 py-2 rounded-xl border border-stone-100">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -360,11 +400,11 @@ export default function AdminProductCreatePage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Ürünü Kaydet
+                  {isEdit ? 'Değişiklikleri Kaydet' : 'Ürünü Kaydet'}
                 </>
               )}
             </button>
-            <Link to="/" className="flex items-center justify-center gap-2 py-4 px-6 bg-white border border-stone-200 rounded-2xl font-semibold text-sm text-stone-600 hover:bg-stone-50 transition-colors">
+            <Link to="/admin/dashboard" className="flex items-center justify-center gap-2 py-4 px-6 bg-white border border-stone-200 rounded-2xl font-semibold text-sm text-stone-600 hover:bg-stone-50 transition-colors">
               İptal
             </Link>
           </div>

@@ -44,6 +44,26 @@ export const productService = {
     return res.data;
   },
 
+  async updateProduct(id: string, data: Partial<{
+    name: string; description: string; category: string; price: number;
+    unit: string; stock: number; images: string[]; tags: string[];
+    healthBenefits: string[]; isFeatured: boolean; isCampaign: boolean;
+    discountedPrice: number; campaignOriginalPrice: number; campaignEndsAt: string;
+  }>) {
+    const res = await api.patch<{ success: boolean; product: Product }>(`/products/${id}`, data);
+    return res.data.product;
+  },
+
+  async deleteProduct(id: string) {
+    const res = await api.delete(`/products/${id}`);
+    return res.data;
+  },
+
+  async getAllProductsAdmin(page = 1, limit = 50) {
+    const res = await api.get<ProductsResponse>('/products', { params: { page, limit, sort: '-createdAt' } });
+    return res.data;
+  },
+
   async createProduct(data: {
     name: string;
     description: string;
