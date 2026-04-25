@@ -29,7 +29,6 @@ export default function AdminDashboardPage() {
   const qc = useQueryClient();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
-  const [deleting, setDeleting] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<Product | null>(null);
 
   if (!isAuthenticated) return <Navigate to="/giris" replace />;
@@ -255,7 +254,7 @@ export default function AdminDashboardPage() {
                 İptal
               </button>
               <button
-                onClick={() => { setDeleting(deleteConfirm._id); deleteMutation.mutate(deleteConfirm._id); }}
+                onClick={() => { deleteMutation.mutate(deleteConfirm._id); }}
                 disabled={deleteMutation.isPending}
                 className="flex-1 py-3 bg-red-500 hover:bg-red-600 rounded-2xl text-sm font-bold text-white disabled:opacity-60 transition-colors">
                 {deleteMutation.isPending ? 'Siliniyor...' : 'Evet, Sil'}
