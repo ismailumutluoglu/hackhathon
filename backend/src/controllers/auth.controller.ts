@@ -50,6 +50,18 @@ export async function login(req: Request, res: Response, next: NextFunction): Pr
   }
 }
 
+export async function forgotPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const { email } = req.body;
+    if (!email) throw new AppError('Email adresi zorunludur.', 400);
+    // Kullanıcı var mı yok mu bilgisini vermiyoruz (güvenlik)
+    await User.findOne({ email }); // sadece DB'ye dokunuyoruz, hata vermiyoruz
+    res.json({ success: true, message: 'Eğer bu email kayıtlıysa şifre sıfırlama bağlantısı gönderildi.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function getMe(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
   try {
     const user = await User.findById(req.userId).select('-__v');

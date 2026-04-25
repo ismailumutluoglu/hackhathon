@@ -12,6 +12,11 @@ export const authService = {
     return res.data;
   },
 
+  async forgotPassword(email: string) {
+    const res = await api.post<{ success: boolean; message: string }>('/auth/forgot-password', { email });
+    return res.data;
+  },
+
   async getMe() {
     const res = await api.get<{ success: boolean; user: User }>('/auth/me');
     return res.data.user;
