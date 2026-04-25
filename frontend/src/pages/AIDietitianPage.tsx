@@ -3,7 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bot, Loader2, AlertTriangle, Sparkles, HeartPulse,
+  Bot, AlertTriangle, Sparkles, HeartPulse,
   Lock, ChevronRight, Leaf, BarChart2, X, ShoppingCart,
   CheckCircle2, Info, Zap, Shield,
 } from 'lucide-react';

@@ -52,7 +52,6 @@ export default function ProductsPage() {
   });
 
   const activeCat  = categories.find(c => c.value === category);
-  const activeSortLabel = sortOptions.find(s => s.value === sort)?.label ?? 'Sırala';
 
   return (
     <div className="min-h-screen bg-[#f7f5f0]">
