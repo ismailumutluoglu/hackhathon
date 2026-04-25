@@ -10,6 +10,7 @@ import RegisterPage from './pages/RegisterPage';
 import AIDietitianPage from './pages/AIDietitianPage';
 import AdminProductCreatePage from './pages/AdminProductCreatePage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
+import OrderDetailPage from './pages/OrderDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import OrdersPage from './pages/OrdersPage';
 import CheckoutPage from './pages/CheckoutPage';
@@ -46,7 +47,7 @@ function AppRoutes() {
         <Route path="/diyetisyen" element={<AIDietitianPage />} />
         <Route path="/profil" element={<ProfilePage />} />
         <Route path="/siparislerim" element={<OrdersPage />} />
-        <Route path="/siparislerim/:id" element={<Navigate to="/siparislerim" replace />} />
+        <Route path="/siparislerim/:id" element={<OrderDetailPage />} />
         <Route path="/odeme" element={<CheckoutPage />} />
         <Route path="/siparis-onay" element={<OrderConfirmationPage />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
